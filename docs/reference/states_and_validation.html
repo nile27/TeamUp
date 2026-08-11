@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상태 & 폼 검증 · TeamUp</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --background:#ffffff;--foreground:#2B2620;--muted:#F5F1EC;--muted-foreground:#6B6257;
+    --card:#ffffff;--border:#E9DFD3;--input:#E4D9CC;
+    --primary:#FFA940;--primary-foreground:#2B2620;--accent:#FFF4E3;
+    --radius:8px;--page-bg:#FBF8F4;--error:#DC4A3D;--error-bg:#FDECEA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard',sans-serif;color:var(--foreground);background:#0e1116;padding:30px 16px;-webkit-font-smoothing:antialiased;line-height:1.6}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{color:#e6e9ee;font-size:22px;margin-bottom:4px}
+  .sub{color:#9aa4b2;font-size:13px;margin-bottom:24px}
+  .st{color:#ffd479;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:32px 0 12px;display:flex;align-items:center;gap:8px}
+  .st::after{content:"";flex:1;height:1px;background:#2a313c}
+  .hint{color:#9aa4b2;font-size:12px;margin:-6px 0 12px}
+
+  .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:760px){.row{grid-template-columns:1fr}}
+  .frame{background:var(--page-bg);border:1px solid #2a313c;border-radius:12px;overflow:hidden}
+  .frame-cap{background:#1d222b;color:#9aa4b2;font-size:11px;font-weight:700;padding:7px 12px;letter-spacing:.5px}
+  .frame-body{padding:20px;min-height:220px;display:flex;flex-direction:column}
+
+  /* 컴포넌트 */
+  .btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;border-radius:var(--radius);padding:8px 15px;cursor:pointer;border:1px solid transparent;font-family:inherit}
+  .btn-primary{background:var(--primary);color:var(--primary-foreground)}
+  .btn-outline{background:#fff;color:var(--foreground);border-color:var(--input)}
+  .input{width:100%;border:1px solid var(--input);border-radius:var(--radius);padding:9px 12px;font-size:14px;font-family:inherit;background:#fff}
+  .input.err{border-color:var(--error);background:var(--error-bg)}
+  .label{font-size:13px;font-weight:600;margin-bottom:6px;display:block}
+  .err-msg{color:var(--error);font-size:12px;margin-top:5px;display:flex;align-items:center;gap:4px}
+
+  /* 빈 상태 */
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}
+  .empty .ic{width:56px;height:56px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .empty h3{font-size:15px;font-weight:700}
+  .empty p{font-size:13px;color:var(--muted-foreground);max-width:220px}
+
+  /* 스켈레톤 */
+  .sk{background:linear-gradient(90deg,#efe7dd 25%,#f7f1ea 50%,#efe7dd 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:6px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .sk-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
+
+  /* 에러 */
+  .errstate{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}
+  .errstate .ic{width:56px;height:56px;border-radius:16px;background:var(--error-bg);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .errstate h3{font-size:15px;font-weight:700}
+  .errstate p{font-size:13px;color:var(--muted-foreground);max-width:220px}
+
+  /* 폼 검증 테이블 */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;background:var(--card);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #2a313c;color:#e6e9ee;vertical-align:top}
+  th{color:#9aa4b2;font-weight:600;font-size:11px;background:#1d222b}
+  td .f{font-family:monospace;color:#a9c9ff;font-size:11.5px}
+  td .m{color:#ffb0a8}
+  .card-dark{background:#171b22;border:1px solid #2a313c;border-radius:10px;padding:2px 14px 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🚦 상태 & 폼 검증</h1>
+  <div class="sub">빈 상태 · 로딩(스켈레톤) · 에러 + 폼 검증 규칙 · MVP에서 테스트보다 중요</div>
+
+  <!-- 목록 페이지 3상태 -->
+  <div class="st">1 · 목록 페이지 — 3가지 상태</div>
+  <div class="hint">모집/커뮤니티 목록이 데이터에 따라 이렇게 나뉨. Claude Code가 정상 상태만 만들지 않게 명시.</div>
+  <div class="row">
+    <!-- 빈 -->
+    <div class="frame">
+      <div class="frame-cap">EMPTY · 데이터 없음</div>
+      <div class="frame-body">
+        <div class="empty">
+          <div class="ic">🌱</div>
+          <h3>아직 모집이 없어요</h3>
+          <p>첫 번째 모집을 등록하고 팀원을 찾아보세요.</p>
+          <button class="btn btn-primary">모집 등록하기</button>
+        </div>
+      </div>
+    </div>
+    <!-- 로딩 -->
+    <div class="frame">
+      <div class="frame-cap">LOADING · 스켈레톤</div>
+      <div class="frame-body">
+        <div class="sk-card">
+          <div class="sk" style="width:70px;height:18px;margin-bottom:10px"></div>
+          <div class="sk" style="width:90%;height:16px;margin-bottom:8px"></div>
+          <div class="sk" style="width:100%;height:6px;margin-bottom:10px"></div>
+          <div class="sk" style="width:50%;height:12px"></div>
+        </div>
+        <div class="sk-card">
+          <div class="sk" style="width:70px;height:18px;margin-bottom:10px"></div>
+          <div class="sk" style="width:80%;height:16px;margin-bottom:8px"></div>
+          <div class="sk" style="width:100%;height:6px"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 에러 -->
+    <div class="frame">
+      <div class="frame-cap">ERROR · 불러오기 실패</div>
+      <div class="frame-body">
+        <div class="errstate">
+          <div class="ic">⚠️</div>
+          <h3>불러오지 못했어요</h3>
+          <p>잠시 후 다시 시도해주세요.</p>
+          <button class="btn btn-outline">다시 시도</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기타 빈 상태들 -->
+  <div class="st">2 · 화면별 빈 상태 문구</div>
+  <div class="card-dark">
+    <table style="background:transparent">
+      <tr><th>화면</th><th>빈 상태 메시지</th><th>액션</th></tr>
+      <tr><td class="f">/community</td><td>아직 글이 없어요. 첫 아이디어를 남겨보세요.</td><td>글쓰기</td></tr>
+      <tr><td class="f">/recruit</td><td>아직 모집이 없어요. 첫 모집을 등록해보세요.</td><td>모집 등록</td></tr>
+      <tr><td class="f">필터 결과 0</td><td>조건에 맞는 결과가 없어요. 필터를 바꿔보세요.</td><td>필터 초기화</td></tr>
+      <tr><td class="f">대시보드/내 모집</td><td>아직 등록한 모집이 없어요.</td><td>모집 등록</td></tr>
+      <tr><td class="f">대시보드/지원한 모집</td><td>아직 지원한 모집이 없어요. 둘러볼까요?</td><td>모집 보기</td></tr>
+      <tr><td class="f">댓글</td><td>첫 댓글을 남겨보세요.</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <!-- 폼 검증: 실제 예시 -->
+  <div class="st">3 · 폼 검증 — 에러 표시 예시</div>
+  <div class="hint">에러는 필드 아래 빨간 메시지 + 필드 테두리 빨강. 제출 시 + 블러 시 검증.</div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="frame">
+      <div class="frame-cap">회원가입 — 검증 실패 예시</div>
+      <div class="frame-body" style="min-height:auto">
+        <div style="margin-bottom:14px">
+          <label class="label">이메일</label>
+          <input class="input err" value="teamup.io">
+          <div class="err-msg">⚠ 올바른 이메일 형식이 아니에요</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <label class="label">닉네임</label>
+          <input class="input" value="김기획">
+        </div>
+        <div>
+          <label class="label">비밀번호</label>
+          <input class="input err" type="password" value="123">
+          <div class="err-msg">⚠ 8자 이상 입력해주세요</div>
+        </div>
+      </div>
+    </div>
+    <div class="frame">
+      <div class="frame-cap">모집 작성 — 필수 누락 예시</div>
+      <div class="frame-body" style="min-height:auto">
+        <div style="margin-bottom:14px">
+          <label class="label">제목</label>
+          <input class="input err" placeholder="프로젝트를 한 줄로">
+          <div class="err-msg">⚠ 제목을 입력해주세요</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <label class="label">모집 유형</label>
+          <div class="err-msg" style="margin-top:0">⚠ 유형을 선택해주세요</div>
+        </div>
+        <div>
+          <label class="label">구하는 역할</label>
+          <div class="err-msg" style="margin-top:0">⚠ 최소 1개의 역할이 필요해요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 폼 검증 규칙표 -->
+  <div class="st">4 · 폼 검증 규칙 (필드별)</div>
+  <div class="card-dark">
+    <table style="background:transparent">
+      <tr><th>폼</th><th>필드</th><th>규칙</th><th>에러 메시지</th></tr>
+      <tr><td rowspan="2" class="f">로그인</td><td>이메일</td><td>필수 · 이메일 형식</td><td class="m">올바른 이메일 형식이 아니에요</td></tr>
+      <tr><td>비밀번호</td><td>필수</td><td class="m">비밀번호를 입력해주세요</td></tr>
+      <tr><td rowspan="3" class="f">회원가입</td><td>이메일</td><td>필수 · 형식 · 중복확인(서버)</td><td class="m">이미 가입된 이메일이에요</td></tr>
+      <tr><td>닉네임</td><td>필수 · 2~20자</td><td class="m">닉네임은 2자 이상이에요</td></tr>
+      <tr><td>비밀번호</td><td>필수 · 8자 이상</td><td class="m">8자 이상 입력해주세요</td></tr>
+      <tr><td rowspan="4" class="f">모집 작성</td><td>유형</td><td>필수 선택</td><td class="m">유형을 선택해주세요</td></tr>
+      <tr><td>제목</td><td>필수 · 5~60자</td><td class="m">제목을 입력해주세요</td></tr>
+      <tr><td>설명</td><td>필수 · 10자 이상</td><td class="m">설명을 조금 더 작성해주세요</td></tr>
+      <tr><td>역할</td><td>최소 1개</td><td class="m">최소 1개의 역할이 필요해요</td></tr>
+      <tr><td rowspan="2" class="f">커뮤니티 작성</td><td>말머리</td><td>필수 선택</td><td class="m">말머리를 선택해주세요</td></tr>
+      <tr><td>제목·내용</td><td>필수</td><td class="m">제목과 내용을 입력해주세요</td></tr>
+      <tr><td class="f">댓글</td><td>내용</td><td>필수 · 1자 이상</td><td class="m">댓글을 입력해주세요</td></tr>
+    </table>
+  </div>
+
+  <!-- 검증 방식 메모 -->
+  <div class="st">5 · 검증 구현 메모</div>
+  <div class="card-dark" style="padding:14px 16px">
+    <div style="color:#e6e9ee;font-size:13px;line-height:1.8">
+      • <b>라이브러리</b>: <span style="font-family:monospace;color:#a9c9ff">react-hook-form + zod</span> (shadcn Form이 이 조합 기본 지원)<br>
+      • <b>이중 검증</b>: 클라이언트(즉시 피드백) + 서버 Action(신뢰). zod 스키마를 <span style="font-family:monospace;color:#a9c9ff">lib/</span>에 두고 양쪽 공유<br>
+      • <b>타이밍</b>: 제출 시 전체 검증 + 블러(포커스 아웃) 시 해당 필드. 타이핑 중엔 에러 안 띄움(짜증남)<br>
+      • <b>표시</b>: 필드 테두리 빨강 + 아래 빨간 메시지. shadcn <span style="font-family:monospace;color:#a9c9ff">FormMessage</span> 사용<br>
+      • <b>서버 에러</b>(중복 이메일 등): Server Action 결과를 <span style="font-family:monospace;color:#a9c9ff">useActionState</span>로 받아 해당 필드에 표시<br>
+      • <b>제출 중</b>: 버튼 비활성 + 로딩 (<span style="font-family:monospace;color:#a9c9ff">useFormStatus</span>)
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:14px 16px;background:#171b22;border:1px solid #2a313c;border-radius:10px;font-size:12.5px;color:#9aa4b2">
+    이 문서로 목록 3상태(빈/로딩/에러) + 폼 검증이 확정. Claude Code에 주면 정상 상태만 만드는 실수를 방지. <b style="color:#e6e9ee">zod 스키마는 lib/에 두고 클라·서버 공유</b>가 핵심.
+  </div>
+</div>
+</body>
+</html>

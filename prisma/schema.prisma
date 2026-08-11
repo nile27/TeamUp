@@ -1,17 +1,203 @@
+// ============================================
+// TeamUp — 사이드프로젝트 매칭 플랫폼
+// Prisma Schema (최종 확정)
+// DB: Supabase (PostgreSQL)
+// ============================================
+//
+// 확정 사항:
+// - 완성도(completeness): 저장 방식 (작성/수정 시 계산해서 저장)
+// - 좋아요/북마크: Phase 2로 미룸 (스키마에 없음, 나중에 별도 테이블로 추가)
+// - 역할(RecruitRole): 별도 테이블 (역할별 인원 관리)
+// - 임베딩(embedding): Phase 2 AI 매칭 대비 nullable 필드 미리 확보
+// ============================================
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Supabase 커넥션 풀링 대응
 }
 
-// 예시 모델
+// ============================================
+// User — 사용자
+// 인증은 Supabase Auth가 담당. 여기선 프로필/앱 데이터만.
+// id는 Supabase auth.users의 uuid와 매칭.
+// ============================================
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @db.Uuid // Supabase auth user id와 동일
   email     String   @unique
-  name      String?
+  nickname  String
+  bio       String?
+  avatarUrl String?
+
+  communityPosts CommunityPost[]
+  recruits       Recruit[]
+  applications   Application[]
+  comments       Comment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ============================================
+// CommunityPost — 커뮤니티 글 (가벼운 층)
+// 말머리 태그 게시판. 아이디어를 부담 없이 던지는 곳.
+// ============================================
+model CommunityPost {
+  id      String       @id @default(cuid())
+  tag     CommunityTag
+  title   String
+  content String       @db.Text
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String @db.Uuid
+
+  comments Comment[]
+
+  // 커뮤니티 → 모집 승격 다리
+  promotedRecruit Recruit? @relation("PromotedFrom")
+
+  viewCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tag])
+  @@index([createdAt])
+}
+
+enum CommunityTag {
+  IDEA     // 아이디어
+  QUESTION // 질문
+  ETC      // 기타
+}
+
+// ============================================
+// Recruit — 정식 모집 (무거운 층)
+// 실행 의지 확정된 글만. 개발자 모집 / 기획자 모집.
+// ============================================
+model Recruit {
+  id      String      @id @default(cuid())
+  type    RecruitType
+  title   String
+  content String      @db.Text
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String @db.Uuid
+
+  // 구조화 폼 필드 (기획 완성도용) — 선택 입력
+  problem      String? @db.Text // 어떤 문제를 겪었나요?
+  targetUser   String? @db.Text // 누가 어떤 상황에 쓰나요?
+  coreFeatures String? @db.Text // 꼭 필요한 기능 3가지는?
+  reference    String? @db.Text // 비슷한 앱/사이트 링크
+
+  // 기획 완성도 (0~100) — 작성/수정 시 계산해서 저장
+  completeness Int @default(0)
+
+  status RecruitStatus @default(OPEN)
+
+  roles        RecruitRole[]
+  applications Application[]
+
+  // 커뮤니티 글에서 승격된 경우 원본 참조
+  promotedFrom   CommunityPost? @relation("PromotedFrom", fields: [promotedFromId], references: [id])
+  promotedFromId String?        @unique
+
+  // Phase 2 AI 매칭 대비 — 임베딩 벡터 (지금은 미사용, nullable)
+  // 실제 벡터 검색은 Supabase pgvector 확장으로. 지금은 자리만 확보.
+  // 활성화 시 Unsupported("vector(1536)")로 변경 예정.
+  embedding Json? // 임시: Phase 2에서 pgvector 컬럼으로 마이그레이션
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum RecruitType {
+  DEV  // 개발자 모집
+  PLAN // 기획자 모집
+}
+
+enum RecruitStatus {
+  OPEN   // 모집 중
+  CLOSED // 모집 마감
+  DONE   // 팀 결성 완료
+}
+
+// ============================================
+// RecruitRole — 모집에서 구하는 역할
+// 예: 프론트엔드 1명, 디자이너 1명
+// ============================================
+model RecruitRole {
+  id    String @id @default(cuid())
+  name  String // 프론트엔드, 백엔드, 디자이너, 기획 등
+  count Int    @default(1)
+
+  recruit   Recruit @relation(fields: [recruitId], references: [id], onDelete: Cascade)
+  recruitId String
+
+  @@index([recruitId])
+}
+
+// ============================================
+// Application — 지원 (모집에 참여 신청)
+// ============================================
+model Application {
+  id      String            @id @default(cuid())
+  message String?           @db.Text
+  status  ApplicationStatus @default(PENDING)
+
+  applicant   User   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String @db.Uuid
+
+  recruit   Recruit @relation(fields: [recruitId], references: [id], onDelete: Cascade)
+  recruitId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([applicantId, recruitId]) // 중복 지원 방지
+  @@index([recruitId])
+}
+
+enum ApplicationStatus {
+  PENDING  // 대기 중
+  ACCEPTED // 수락됨
+  REJECTED // 거절됨
+}
+
+// ============================================
+// Comment — 커뮤니티 글 댓글
+// ============================================
+model Comment {
+  id      String @id @default(cuid())
+  content String @db.Text
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String @db.Uuid
+
+  post   CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+// ============================================
+// [Phase 2 예정] — 지금은 주석으로만
+// ============================================
+// model Like {
+//   id        String   @id @default(cuid())
+//   userId    String   @db.Uuid
+//   recruitId String?
+//   postId    String?
+//   createdAt DateTime @default(now())
+//   @@unique([userId, recruitId])
+//   @@unique([userId, postId])
+// }

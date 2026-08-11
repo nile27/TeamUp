@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature 기반 구조 · TeamUp</title>
+<style>
+  :root{--bg:#0e1116;--card:#171b22;--card2:#1d222b;--line:#2a313c;--tx:#e6e9ee;--mut:#9aa4b2;
+    --feat:#ffb86b;--app:#6ea8fe;--shared:#7ee0b8;--f:#c9a8ff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);padding:30px 16px;line-height:1.6}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:22px;margin-bottom:4px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:24px}
+  .st{font-size:12px;color:var(--mut);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+  .st::after{content:"";flex:1;height:1px;background:var(--line)}
+  .tree{font-family:"SF Mono",Menlo,monospace;font-size:12.5px;line-height:1.75;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:18px 20px;overflow-x:auto}
+  .c{color:var(--mut)}
+  .feat{color:var(--feat);font-weight:700}
+  .app{color:var(--app);font-weight:700}
+  .shared{color:var(--shared);font-weight:700}
+  .fileh{color:var(--f)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-bottom:14px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--mut);margin-top:12px}
+  .box b{color:var(--tx)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:11px}
+  td .p{font-family:monospace;color:#a9c9ff;font-size:11.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗂️ Feature 기반 폴더 구조 (콜로케이션)</h1>
+  <div class="sub">"함께 바뀌는 것은 함께 둔다" · 실무 레퍼런스 구조 반영 · Phase 2 Spring 이관 유리</div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:var(--app)"></span> app/ (라우팅만)</span>
+    <span><span class="dot" style="background:var(--feat)"></span> features/ (기능별)</span>
+    <span><span class="dot" style="background:var(--shared)"></span> 루트 공용</span>
+  </div>
+
+  <div class="tree">
+teamup/
+├─ <span class="shared">src/</span>
+│  ├─ <span class="app">app/</span>                          <span class="c"># 라우팅 껍데기 (얇게). features 조립만</span>
+│  │  ├─ (marketing)/page.tsx      <span class="c"># 랜딩 (SSG) → features/landing</span>
+│  │  ├─ login/ signup/            <span class="c"># SSG → features/auth</span>
+│  │  ├─ community/
+│  │  │  ├─ page.tsx               <span class="c"># 목록 (SSR)</span>
+│  │  │  ├─ [id]/page.tsx          <span class="c"># 상세 (SSR)</span>
+│  │  │  └─ new/page.tsx           <span class="c"># 작성 (SSR)</span>
+│  │  ├─ recruit/
+│  │  │  ├─ page.tsx               <span class="c"># 목록 (SSR)</span>
+│  │  │  ├─ [id]/page.tsx          <span class="c"># 상세 (ISR)</span>
+│  │  │  ├─ new/page.tsx           <span class="c"># 작성 (SSR)</span>
+│  │  │  └─ _components/           <span class="c"># (선택) 이 라우트 전용 (_ = 라우팅 제외)</span>
+│  │  ├─ dashboard/page.tsx        <span class="c"># 동적</span>
+│  │  ├─ api/                      <span class="c"># route.ts (얇게) → feature queries/actions</span>
+│  │  └─ layout.tsx  globals.css   <span class="c"># globals: shadcn 테마</span>
+│  │
+│  ├─ <span class="feat">features/</span>                     <span class="c"># ★ 기능별 응집 (콜로케이션)</span>
+│  │  ├─ <span class="feat">recruit/</span>
+│  │  │  ├─ components/            <span class="c"># RecruitCard, CompletenessGauge, PlannerGuideCard,</span>
+│  │  │  │                         <span class="c">#   StructuredForm, RoleInput, ApplyBar</span>
+│  │  │  ├─ <span class="fileh">actions.ts</span>             <span class="c"># 'use server' — 생성·수정·지원</span>
+│  │  │  ├─ <span class="fileh">queries.ts</span>             <span class="c"># 조회 함수 (서버 컴포넌트용)</span>
+│  │  │  ├─ <span class="fileh">schema.ts</span>              <span class="c"># zod (클라·서버 공유)</span>
+│  │  │  ├─ <span class="fileh">completeness.ts</span>        <span class="c"># 완성도 계산</span>
+│  │  │  └─ <span class="fileh">types.ts</span>
+│  │  ├─ <span class="feat">community/</span>                 <span class="c"># PostListItem, PromoteBanner, CommentList + actions/queries/schema</span>
+│  │  ├─ <span class="feat">auth/</span>                      <span class="c"># login-form, signup-form, social-buttons + actions/schema</span>
+│  │  ├─ <span class="feat">dashboard/</span>                 <span class="c"># profile-summary + queries</span>
+│  │  └─ <span class="feat">landing/</span>                   <span class="c"># Hero, Problem, Flow, Participation, Planner, CTA, Footer</span>
+│  │
+│  ├─ <span class="shared">components/ui/</span>                <span class="c"># shadcn 기본 (도메인 무관 디자인 시스템)</span>
+│  ├─ <span class="shared">lib/</span>                         <span class="c"># 순수 유틸 (cn, formatDate)</span>
+│  ├─ <span class="shared">server/</span>                      <span class="c"># db.ts (Prisma 싱글턴), supabase.ts (외부 래퍼)</span>
+│  ├─ <span class="shared">hooks/</span>                       <span class="c"># 도메인 무관 공용 훅</span>
+│  └─ <span class="shared">config/</span>                      <span class="c"># 상수·환경</span>
+│
+├─ prisma/schema.prisma
+├─ public/                        <span class="c"># 랜딩 일러스트(svg)</span>
+├─ .env  .env.example
+└─ CLAUDE.md  docs/
+  </div>
+
+  <div class="st">핵심 원칙 — 콜로케이션</div>
+  <div class="box">
+    <b>1. app/은 얇게, features/는 두껍게</b> — page.tsx는 features의 컴포넌트·쿼리를 조립만. URL 구조 바꿔도 로직은 그대로.<br><br>
+    <b>2. 함께 바뀌는 건 함께 둔다</b> — 한 기능의 컴포넌트·액션·쿼리·스키마·타입이 한 폴더에. "모집 고칠 일 있으면 features/recruit만 본다."<br><br>
+    <b>3. 읽기/쓰기 분리</b> — queries.ts(조회, 서버 컴포넌트용) + actions.ts(변경, Server Action). 서버 우선 아키텍처와 정확히 일치.<br><br>
+    <b>4. 라우트 전용 컴포넌트</b> — 한 페이지에서만 쓰는 건 app/.../_components/ (밑줄=라우팅 제외). features 안 감.<br><br>
+    <b>5. 배럴 파일 주의</b> — 폴더마다 index.ts 몰아서 re-export는 트리쉐이킹 방해·순환참조 유발. 명확한 경계에서만.
+  </div>
+
+  <div class="st">읽기 / 쓰기 흐름</div>
+  <div class="box" style="padding:6px 18px">
+    <table>
+      <tr><th>흐름</th><th>경로</th></tr>
+      <tr><td>읽기 (조회)</td><td class="p">서버 컴포넌트 → features/recruit/queries.ts → Prisma → DB</td></tr>
+      <tr><td>쓰기 (변경)</td><td class="p">form action → features/recruit/actions.ts ('use server') → Prisma → revalidate</td></tr>
+      <tr><td>API (RN 대비)</td><td class="p">app/api/recruit/route.ts → 같은 queries.ts 재사용</td></tr>
+    </table>
+  </div>
+
+  <div style="margin-top:18px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--mut)">
+    <b style="color:var(--tx)">Phase 2 이점</b> — 백엔드를 Spring으로 뺄 때, 각 feature의 <span style="font-family:monospace;color:#a9c9ff">queries.ts + actions.ts</span>가 그대로 Spring 서비스 계층에 대응. 기능별로 로직이 모여있어 이관이 명확.
+  </div>
+</div>
+</body>
+</html>

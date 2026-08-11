@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>앱 내부 페이지 레이아웃 (2) · 커뮤니티·인증</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --background:#ffffff; --foreground:#2B2620; --muted:#F5F1EC; --muted-foreground:#6B6257;
+    --card:#ffffff; --border:#E9DFD3; --input:#E4D9CC;
+    --primary:#FFA940; --primary-foreground:#2B2620; --primary-hover:#F08C00;
+    --accent:#FFF4E3; --ring:#FFA940; --radius:8px; --page-bg:#FBF8F4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:'Pretendard',sans-serif; color:var(--foreground); background:#0e1116; padding:24px; -webkit-font-smoothing:antialiased}
+  .doc-title{color:#e6e9ee; font-size:20px; font-weight:800; margin-bottom:6px}
+  .doc-sub{color:#9aa4b2; font-size:13px; margin-bottom:24px}
+  .page-label{color:#ffd479; font-size:12px; font-weight:700; letter-spacing:1px; margin:32px 0 10px; text-transform:uppercase}
+  .route{font-family:monospace; color:#7ee0b8; font-size:12px}
+  .browser{background:var(--page-bg); border-radius:12px; overflow:hidden; border:1px solid #2a313c; margin-bottom:8px}
+  .browser-bar{background:#efe9e1; padding:8px 14px; display:flex; align-items:center; gap:6px; border-bottom:1px solid var(--border)}
+  .browser-bar .dot{width:10px; height:10px; border-radius:50%}
+  .browser-bar .url{margin-left:12px; font-family:monospace; font-size:11px; color:#8a8177; background:#fff; padding:3px 10px; border-radius:5px}
+  .appnav{background:#fff; border-bottom:1px solid var(--border); height:56px; display:flex; align-items:center; padding:0 24px; gap:24px}
+  .appnav .logo{font-weight:800; font-size:17px; display:flex; align-items:center; gap:7px}
+  .appnav .logo .d{width:18px;height:18px;border-radius:5px;background:var(--primary)}
+  .appnav .links{display:flex; gap:20px; font-size:14px; color:var(--muted-foreground)}
+  .appnav .links .on{color:var(--foreground); font-weight:700}
+  .appnav .right{margin-left:auto; display:flex; align-items:center; gap:12px}
+  .content{padding:28px 24px; max-width:960px; margin:0 auto}
+  .btn{display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; border-radius:var(--radius); padding:9px 16px; cursor:pointer; border:1px solid transparent; font-family:inherit}
+  .btn-primary{background:var(--primary); color:var(--primary-foreground)}
+  .btn-outline{background:#fff; color:var(--foreground); border-color:var(--input)}
+  .btn-ghost{background:transparent; color:var(--muted-foreground)}
+  .btn-sm{padding:6px 12px; font-size:13px}
+  .btn-block{width:100%; justify-content:center}
+  .input{width:100%; border:1px solid var(--input); border-radius:var(--radius); padding:9px 12px; font-size:14px; font-family:inherit; background:#fff}
+  .input::placeholder{color:#b3a894}
+  .label{font-size:13px; font-weight:600; margin-bottom:6px; display:block}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px}
+  .badge{display:inline-flex; align-items:center; font-size:12px; font-weight:600; padding:3px 10px; border-radius:100px}
+  .badge-amber{background:var(--accent); color:#9a6a15}
+  .badge-ink{background:var(--foreground); color:#fff}
+  .badge-outline{background:#fff; border:1px solid var(--border); color:var(--muted-foreground)}
+  .page-title{font-size:24px; font-weight:800}
+  .page-desc{color:var(--muted-foreground); font-size:14px; margin-top:4px}
+  .row-between{display:flex; justify-content:space-between; align-items:center}
+  .hint{color:#9aa4b2; font-size:12px; margin:2px 0 14px; padding-left:2px}
+  .divider{border:none; border-top:1px solid var(--border); margin:16px 0}
+</style>
+</head>
+<body>
+
+<div class="doc-title">📱 앱 내부 페이지 레이아웃 (2)</div>
+<div class="doc-sub">커뮤니티 상세·작성 + 로그인·회원가입 · 앞 목업(app_pages_layout)의 나머지</div>
+
+<!-- ========== 커뮤니티 상세 ========== -->
+<div class="page-label">6 · 커뮤니티 상세 <span class="route">/community/[id]</span></div>
+<div class="hint">글 본문 + (아이디어글) 정식 모집으로 만들기 버튼 + 댓글.</div>
+<div class="browser">
+  <div class="browser-bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="url">teamup.io/community/17</span></div>
+  <div class="appnav">
+    <div class="logo"><span class="d"></span>TeamUp</div>
+    <div class="links"><span class="on">커뮤니티</span><span>모집</span></div>
+    <div class="right"><button class="btn btn-outline btn-sm">내 대시보드</button></div>
+  </div>
+  <div class="content" style="max-width:720px">
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:14px">← 목록으로</button>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px"><span class="badge badge-amber">아이디어</span></div>
+    <div class="page-title">동네 기반 중고 재능 거래 앱 어때요?</div>
+    <div class="page-desc" style="margin-bottom:20px">김기획 · 2시간 전 · 조회 42</div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:14px; color:#4a4239; line-height:1.7">동네 사람들끼리 재능을 사고파는 앱이 있으면 어떨까요? 예를 들어 옆집 대학생이 과외를 해주고, 아랫집 분이 반찬을 만들어주고... 당근마켓처럼 지역 기반인데 물건이 아니라 '재능'을 거래하는 거죠. 초기 아이디어라 같이 다듬어주실 분 있을까요?</div>
+    </div>
+
+    <!-- 승격 다리 -->
+    <div class="card" style="background:var(--accent); border-color:#f3d9a8; display:flex; align-items:center; gap:14px; margin-bottom:24px">
+      <div style="font-size:20px">🌱</div>
+      <div style="flex:1"><div style="font-weight:700; font-size:14px">이 아이디어, 실제로 만들어볼까요?</div><div style="font-size:13px; color:#8a6a2e">반응이 좋다면 정식 모집으로 발전시켜 팀을 구할 수 있어요.</div></div>
+      <button class="btn btn-primary btn-sm">정식 모집으로 만들기</button>
+    </div>
+
+    <div style="font-weight:700; font-size:15px; margin-bottom:12px">댓글 3</div>
+    <div class="card" style="padding:0; margin-bottom:16px">
+      <div style="padding:14px 18px; border-bottom:1px solid var(--border)"><div style="font-weight:600; font-size:13px; margin-bottom:3px">이개발</div><div style="font-size:14px; color:#4a4239">지역 인증을 어떻게 할지가 관건일 것 같아요</div></div>
+      <div style="padding:14px 18px"><div style="font-weight:600; font-size:13px; margin-bottom:3px">박디자인</div><div style="font-size:14px; color:#4a4239">재능 카테고리 정리가 재밌겠는데요?</div></div>
+    </div>
+    <div style="display:flex; gap:8px"><input class="input" placeholder="댓글을 입력하세요"><button class="btn btn-primary">등록</button></div>
+  </div>
+</div>
+
+<!-- ========== 커뮤니티 작성 ========== -->
+<div class="page-label">7 · 커뮤니티 작성 <span class="route">/community/new</span></div>
+<div class="hint">말머리 선택 + 제목 + 본문. 심플한 폼.</div>
+<div class="browser">
+  <div class="browser-bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="url">teamup.io/community/new</span></div>
+  <div class="appnav">
+    <div class="logo"><span class="d"></span>TeamUp</div>
+    <div class="links"><span class="on">커뮤니티</span><span>모집</span></div>
+    <div class="right"><button class="btn btn-outline btn-sm">내 대시보드</button></div>
+  </div>
+  <div class="content" style="max-width:680px">
+    <div class="page-title" style="margin-bottom:18px">글쓰기</div>
+    <div class="card">
+      <div style="margin-bottom:16px">
+        <label class="label">말머리</label>
+        <div style="display:flex; gap:8px"><button class="btn btn-primary btn-sm">아이디어</button><button class="btn btn-outline btn-sm">질문</button><button class="btn btn-outline btn-sm">기타</button></div>
+      </div>
+      <div style="margin-bottom:16px"><label class="label">제목</label><input class="input" placeholder="제목을 입력하세요"></div>
+      <div style="margin-bottom:20px"><label class="label">내용</label><textarea class="input" rows="8" placeholder="자유롭게 이야기를 나눠보세요"></textarea></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px"><button class="btn btn-ghost">취소</button><button class="btn btn-primary">등록하기</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 로그인 ========== -->
+<div class="page-label">8 · 로그인 <span class="route">/login</span></div>
+<div class="hint">중앙 카드. 이메일/비번 + 소셜 로그인.</div>
+<div class="browser">
+  <div class="browser-bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="url">teamup.io/login</span></div>
+  <div style="min-height:440px; display:flex; align-items:center; justify-content:center; padding:40px">
+    <div style="width:360px">
+      <div style="text-align:center; margin-bottom:24px">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:22px"><span style="width:22px;height:22px;border-radius:6px;background:var(--primary)"></span>TeamUp</div>
+        <div style="color:var(--muted-foreground); font-size:14px; margin-top:8px">다시 오신 걸 환영해요</div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:14px"><label class="label">이메일</label><input class="input" placeholder="you@example.com"></div>
+        <div style="margin-bottom:18px"><label class="label">비밀번호</label><input class="input" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-block" style="margin-bottom:14px">로그인</button>
+        <div style="display:flex; align-items:center; gap:10px; margin:14px 0; color:#b3a894; font-size:12px"><div style="flex:1; border-top:1px solid var(--border)"></div>또는<div style="flex:1; border-top:1px solid var(--border)"></div></div>
+        <button class="btn btn-outline btn-block" style="margin-bottom:8px">🇬 구글로 계속하기</button>
+        <button class="btn btn-outline btn-block" style="background:#FEE500; border-color:#FEE500">💬 카카오로 계속하기</button>
+      </div>
+      <div style="text-align:center; font-size:13px; color:var(--muted-foreground); margin-top:16px">아직 회원이 아니신가요? <span style="color:var(--foreground); font-weight:700">회원가입</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 회원가입 ========== -->
+<div class="page-label">9 · 회원가입 <span class="route">/signup</span></div>
+<div class="hint">로그인과 통일. 이메일/비번/닉네임 + 소셜.</div>
+<div class="browser">
+  <div class="browser-bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="url">teamup.io/signup</span></div>
+  <div style="min-height:480px; display:flex; align-items:center; justify-content:center; padding:40px">
+    <div style="width:360px">
+      <div style="text-align:center; margin-bottom:24px">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:22px"><span style="width:22px;height:22px;border-radius:6px;background:var(--primary)"></span>TeamUp</div>
+        <div style="color:var(--muted-foreground); font-size:14px; margin-top:8px">아이디어를 현실로 만드는 곳</div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:14px"><label class="label">이메일</label><input class="input" placeholder="you@example.com"></div>
+        <div style="margin-bottom:14px"><label class="label">닉네임</label><input class="input" placeholder="사용할 이름"></div>
+        <div style="margin-bottom:18px"><label class="label">비밀번호</label><input class="input" type="password" placeholder="8자 이상"></div>
+        <button class="btn btn-primary btn-block" style="margin-bottom:14px">회원가입</button>
+        <div style="display:flex; align-items:center; gap:10px; margin:14px 0; color:#b3a894; font-size:12px"><div style="flex:1; border-top:1px solid var(--border)"></div>또는<div style="flex:1; border-top:1px solid var(--border)"></div></div>
+        <button class="btn btn-outline btn-block" style="margin-bottom:8px">🇬 구글로 시작하기</button>
+        <button class="btn btn-outline btn-block" style="background:#FEE500; border-color:#FEE500">💬 카카오로 시작하기</button>
+      </div>
+      <div style="text-align:center; font-size:13px; color:var(--muted-foreground); margin-top:16px">이미 계정이 있으신가요? <span style="color:var(--foreground); font-weight:700">로그인</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="color:#9aa4b2; font-size:12px; margin-top:24px; padding-top:16px; border-top:1px solid #2a313c">
+  이걸로 MVP 10개 페이지 레이아웃 완성 (랜딩 + 앞 목업 5개 + 이 4개). 실제 구현 시 shadcn 컴포넌트로 매핑.
+</div>
+
+</body>
+</html>

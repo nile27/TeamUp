@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>컴포넌트 분리 · TeamUp</title>
+<style>
+  :root{--bg:#0e1116;--card:#171b22;--card2:#1d222b;--line:#2a313c;--tx:#e6e9ee;--mut:#9aa4b2;
+    --shadcn:#7ee0b8;--custom:#ffb86b;--layout:#6ea8fe;--page:#c9a8ff;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);padding:30px 16px;line-height:1.6}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:22px;margin-bottom:4px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:24px}
+  .st{font-size:12px;color:var(--mut);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin:30px 0 14px;display:flex;align-items:center;gap:8px}
+  .st::after{content:"";flex:1;height:1px;background:var(--line)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-bottom:8px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px}
+  .d-shadcn{background:var(--shadcn)}.d-custom{background:var(--custom)}.d-layout{background:var(--layout)}.d-page{background:var(--page)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .box h3{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .comp{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line)}
+  .comp:last-child{border-bottom:none}
+  .comp .nm{font-family:monospace;font-weight:700;flex-shrink:0}
+  .comp .ds{color:var(--mut);font-size:12px}
+  .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-left:auto}
+  .t-shadcn{background:rgba(126,224,184,.16);color:var(--shadcn)}
+  .t-custom{background:rgba(255,184,107,.16);color:var(--custom)}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:11px}
+  td .c{font-family:monospace;font-size:11.5px;color:#a9c9ff}
+  .route{font-family:monospace;color:var(--shadcn);font-size:12px}
+
+  .tree{font-family:monospace;font-size:12.5px;line-height:1.7;color:var(--tx);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto}
+  .tree .c{color:var(--mut)}
+  .tree .f{color:var(--custom)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧩 컴포넌트 분리</h1>
+  <div class="sub">TeamUp · 10개 페이지에서 반복 요소 추출 · shadcn 기본 vs 커스텀 구분</div>
+
+  <div class="legend">
+    <span><span class="dot d-shadcn"></span> shadcn 기본 (설치만)</span>
+    <span><span class="dot d-custom"></span> 커스텀 (직접 제작)</span>
+    <span><span class="dot d-layout"></span> 레이아웃</span>
+    <span><span class="dot d-page"></span> 페이지</span>
+  </div>
+
+  <!-- shadcn 기본 -->
+  <div class="st">1 · shadcn 기본 컴포넌트 (npx로 설치)</div>
+  <div class="box">
+    <div class="comp"><span class="nm">Button</span><span class="ds">primary(앰버)/outline/ghost, sm</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Card</span><span class="ds">모든 카드 컨테이너</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Input / Textarea</span><span class="ds">모든 입력 필드</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Label</span><span class="ds">폼 라벨</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Tabs</span><span class="ds">필터(전체/아이디어…), 대시보드 탭</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Badge</span><span class="ds">말머리·유형·상태·역할 뱃지</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Progress</span><span class="ds">기획 완성도 게이지</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Avatar</span><span class="ds">프로필 이미지</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Pagination</span><span class="ds">목록 페이지네이션</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Separator</span><span class="ds">구분선</span><span class="tag t-shadcn">shadcn</span></div>
+    <div class="comp"><span class="nm">Sonner (toast)</span><span class="ds">등록/지원 완료 알림</span><span class="tag t-shadcn">shadcn</span></div>
+  </div>
+
+  <!-- 커스텀 -->
+  <div class="st">2 · 커스텀 컴포넌트 (직접 제작 — 이 서비스 고유)</div>
+  <div class="grid">
+    <div class="box">
+      <h3>🔨 모집 관련</h3>
+      <div class="comp"><span class="nm">RecruitCard</span><span class="ds">모집 목록 카드 (유형·완성도·역할·지원수)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">CompletenessGauge</span><span class="ds">완성도 바 + % (Progress 감쌈)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">PlannerGuideCard</span><span class="ds">기획자 안내 카드 (앰버 박스)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">RoleInput</span><span class="ds">역할+인원 추가 입력 (동적)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">StructuredForm</span><span class="ds">구조화 기획 폼 (4개 질문)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">ApplyBar</span><span class="ds">상세 하단 고정 지원 바</span><span class="tag t-custom">커스텀</span></div>
+    </div>
+    <div class="box">
+      <h3>💬 커뮤니티 · 공통</h3>
+      <div class="comp"><span class="nm">PostListItem</span><span class="ds">커뮤니티 글 목록 행 (말머리+제목+메타)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">TagFilter</span><span class="ds">말머리/유형 필터 탭 (Tabs 감쌈)</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">PromoteBanner</span><span class="ds">🌱 정식 모집으로 만들기 배너</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">CommentList</span><span class="ds">댓글 목록 + 입력</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">PageHeader</span><span class="ds">제목+설명+우측 액션 버튼</span><span class="tag t-custom">커스텀</span></div>
+      <div class="comp"><span class="nm">SocialButtons</span><span class="ds">구글·카카오 로그인 버튼</span><span class="tag t-custom">커스텀</span></div>
+    </div>
+  </div>
+
+  <!-- 레이아웃 -->
+  <div class="st">3 · 레이아웃 컴포넌트</div>
+  <div class="box">
+    <div class="comp"><span class="nm">AppNav</span><span class="ds">앱 상단 네비 (로고+링크+우측). 앱 내부 전 페이지 공통</span><span class="tag t-custom">커스텀</span></div>
+    <div class="comp"><span class="nm">AppShell</span><span class="ds">AppNav + content 컨테이너 래퍼 (레이아웃)</span><span class="tag t-custom">커스텀</span></div>
+    <div class="comp"><span class="nm">AuthLayout</span><span class="ds">로그인/회원가입용 중앙 정렬 레이아웃</span><span class="tag t-custom">커스텀</span></div>
+    <div class="comp"><span class="nm">(랜딩은 별도)</span><span class="ds">랜딩은 AppNav 안 씀 — 자체 헤더+섹션</span><span class="tag t-custom">별도</span></div>
+  </div>
+
+  <!-- 페이지별 조합 -->
+  <div class="st">4 · 페이지별 컴포넌트 조합</div>
+  <div class="box" style="padding:8px 18px">
+    <table>
+      <tr><th>페이지</th><th>사용 컴포넌트</th></tr>
+      <tr><td><span class="route">/community</span></td><td><span class="c">AppShell · PageHeader · TagFilter · PostListItem × N · Pagination</span></td></tr>
+      <tr><td><span class="route">/community/[id]</span></td><td><span class="c">AppShell · PromoteBanner · CommentList</span></td></tr>
+      <tr><td><span class="route">/community/new</span></td><td><span class="c">AppShell · TagFilter(선택) · Input · Textarea · Button</span></td></tr>
+      <tr><td><span class="route">/recruit</span></td><td><span class="c">AppShell · PageHeader · TagFilter · RecruitCard × N</span></td></tr>
+      <tr><td><span class="route">/recruit/[id]</span></td><td><span class="c">AppShell · CompletenessGauge · Card(기획정보) · Badge(역할) · ApplyBar</span></td></tr>
+      <tr><td><span class="route">/recruit/new</span> ★</td><td><span class="c">AppShell · PlannerGuideCard · CompletenessGauge · StructuredForm · RoleInput · Button</span></td></tr>
+      <tr><td><span class="route">/dashboard</span></td><td><span class="c">AppShell · Avatar · Tabs · RecruitCard/PostListItem(재사용)</span></td></tr>
+      <tr><td><span class="route">/login</span></td><td><span class="c">AuthLayout · Input · Button · SocialButtons</span></td></tr>
+      <tr><td><span class="route">/signup</span></td><td><span class="c">AuthLayout · Input · Button · SocialButtons</span></td></tr>
+      <tr><td><span class="route">/ (랜딩)</span></td><td><span class="c">자체 (Hero, Problem, Flow, Participation, Planner, CTA, Footer)</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 폴더 구조 -->
+  <div class="st">5 · 폴더 구조 (components/)</div>
+  <div class="tree">
+components/
+  <span class="c"># shadcn 기본 (npx shadcn add)</span>
+  ui/
+    button.tsx  card.tsx  input.tsx  textarea.tsx
+    label.tsx  tabs.tsx  badge.tsx  progress.tsx
+    avatar.tsx  pagination.tsx  separator.tsx  sonner.tsx
+
+  <span class="c"># 레이아웃</span>
+  layout/
+    <span class="f">app-nav.tsx</span>
+    <span class="f">app-shell.tsx</span>
+    <span class="f">auth-layout.tsx</span>
+
+  <span class="c"># 도메인: 모집</span>
+  recruit/
+    <span class="f">recruit-card.tsx</span>
+    <span class="f">completeness-gauge.tsx</span>
+    <span class="f">planner-guide-card.tsx</span>
+    <span class="f">structured-form.tsx</span>
+    <span class="f">role-input.tsx</span>
+    <span class="f">apply-bar.tsx</span>
+
+  <span class="c"># 도메인: 커뮤니티</span>
+  community/
+    <span class="f">post-list-item.tsx</span>
+    <span class="f">promote-banner.tsx</span>
+    <span class="f">comment-list.tsx</span>
+
+  <span class="c"># 공통</span>
+  common/
+    <span class="f">page-header.tsx</span>
+    <span class="f">tag-filter.tsx</span>
+    <span class="f">social-buttons.tsx</span>
+
+  <span class="c"># 랜딩 (별도 톤)</span>
+  landing/
+    <span class="f">hero.tsx  problem.tsx  flow.tsx</span>
+    <span class="f">participation.tsx  planner.tsx  cta.tsx  footer.tsx</span>
+  </div>
+
+  <div style="margin-top:20px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--mut)">
+    <b style="color:var(--tx)">핵심 재사용 포인트</b> — <span class="c">RecruitCard</span>는 모집 목록·대시보드에서, <span class="c">PostListItem</span>은 커뮤니티 목록·대시보드에서, <span class="c">TagFilter</span>는 커뮤니티·모집 양쪽에서, <span class="c">CompletenessGauge</span>는 모집 목록 카드·상세·작성에서 재사용. 이 4개가 중복을 가장 많이 없애는 핵심 컴포넌트.
+  </div>
+</div>
+</body>
+</html>
