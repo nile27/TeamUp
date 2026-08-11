@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 프로젝트 환경에 맞춰 필요 시 24로 변경 가능
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
