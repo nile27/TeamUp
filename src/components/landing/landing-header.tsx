@@ -24,14 +24,14 @@ export function LandingHeader() {
         </nav>
         <div className="flex items-center gap-3.5 text-[15px]">
           <Link
-            href="#"
+            href="/login"
             className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
           >
             로그인
           </Link>
-          <button className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors">
+          <Link href="/signup" className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors">
             회원가입
-          </button>
+          </Link>
         </div>
       </div>
     </header>
