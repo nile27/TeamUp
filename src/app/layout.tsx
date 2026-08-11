@@ -3,7 +3,8 @@ import { Geist_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+// Pretendard(한글)를 기본 sans로, Geist는 라틴 폴백 변수로 둔다.
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={cn("h-full", "antialiased", geistMono.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col">{children}</body>

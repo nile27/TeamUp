@@ -1,5 +1,7 @@
 # SCHEMA.md — 데이터 모델
 
+> ⚠️ **Prisma 6 버전대(^6.19.0) 기준.** schema.prisma에 `url`/`directUrl`을 두는 방식. Prisma 7은 이걸 prisma.config.ts로 옮기고 driver adapter를 요구하므로, 이 스키마 그대로 쓰려면 Prisma 6 유지. (7 설치 시 P1012 에러)
+
 TeamUp 데이터베이스 설계 문서. Prisma + Supabase(PostgreSQL) 기준. 실제 스키마는 `prisma/schema.prisma` 참고.
 
 ---

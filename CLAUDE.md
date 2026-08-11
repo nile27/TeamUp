@@ -4,6 +4,30 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 ---
 
+## ⚙️ 작업 도구 안내
+
+이 프로젝트는 **Claude Code(메인) / Antigravity / Cowork**를 번갈아 사용한다.
+- **CLAUDE.md와 AGENTS.md는 항상 같은 내용을 유지**한다 (Claude Code는 CLAUDE.md, Antigravity는 AGENTS.md를 읽음).
+- 규칙을 수정하면 **두 파일 다** 업데이트할 것.
+- 도구를 옮겨도 아래 "진행 상태"를 보고 이어서 작업한다.
+
+## 📍 진행 상태 (작업 시 최신화할 것)
+
+> 도구/세션을 옮겨도 여기만 보면 이어서 진행 가능하도록, 단계 끝날 때마다 갱신.
+
+- [x] 1단계 세팅: Next.js 생성, 패키지 설치, shadcn 초기화, Prisma 스키마 배치
+- [x] `.env` 입력 (Supabase 키 4개. anon 자리에 publishable 키 사용)
+- [x] Prisma 6으로 고정 + 마이그레이션 (`migrate dev`) + `server/db.ts`
+- [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능) ← **지금 여기**
+- [ ] 랜딩 이관 (_design-mockups/landing.html → features/landing)
+- [ ] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
+- [ ] 인증 (features/auth)
+- [ ] 커뮤니티 (features/community)
+- [ ] 모집 ★핵심 (features/recruit)
+- [ ] 대시보드 + 반응형 + 배포
+
+---
+
 ## 프로젝트 한 줄 요약
 
 "개발 못 해도 기획자로 사이드프로젝트에 참여하는" 팀원 매칭 플랫폼. 비개발자도 기획자로 참여하도록 문을 여는 게 핵심 차별점.
@@ -16,6 +40,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - **UI**: shadcn/ui + Tailwind CSS + Pretendard 폰트
 - **애니메이션**: Framer Motion (motion) — 랜딩만
 - **DB**: Prisma + Supabase (PostgreSQL)
+  - ⚠️ **Prisma는 6 버전대(^6.19.0) 사용.** Prisma 7은 datasource URL을 prisma.config.ts로 옮기고 driver adapter를 요구하는 등 설정이 크게 바뀌어, 자료도 적고 MVP엔 과함. schema.prisma에 `url`/`directUrl` 두는 6 방식 유지. `prisma migrate`가 P1012 (datasource url no longer supported) 내면 7이 깔린 것이니 6으로 다운그레이드.
 - **인증**: Supabase Auth (소셜: 구글/카카오)
 - **폼/검증**: react-hook-form + zod
 - **배포**: Vercel
@@ -135,6 +160,7 @@ src/
 - ❌ 앰버를 흰 배경 텍스트 색으로 사용
 - ❌ 랜딩 톤을 앱 내부에 그대로 적용 (분리)
 - ❌ localStorage/sessionStorage 사용 (서버·쿠키 기반)
+- ❌ git push 및 commit -m 허락없이는 하지 말고, 커밋 메세지 추천 정도만 말해 줄 것
 
 ## 환경변수 (.env) — 중요
 
