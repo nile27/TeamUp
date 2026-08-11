@@ -18,9 +18,9 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] 1단계 세팅: Next.js 생성, 패키지 설치, shadcn 초기화, Prisma 스키마 배치
 - [x] `.env` 입력 (Supabase 키 4개. anon 자리에 publishable 키 사용)
 - [x] Prisma 6으로 고정 + 마이그레이션 (`migrate dev`) + `server/db.ts`
-- [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능) ← **지금 여기**
-- [ ] 랜딩 이관 (_design-mockups/landing.html → features/landing)
-- [ ] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
+- [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능)
+- [x] 랜딩 이관 (_design-mockups/landing.html → components/landing)
+- [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등) ← **지금 여기**
 - [ ] 인증 (features/auth)
 - [ ] 커뮤니티 (features/community)
 - [ ] 모집 ★핵심 (features/recruit)

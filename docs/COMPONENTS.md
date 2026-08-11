@@ -30,11 +30,13 @@
 ### features/recruit/components/
 | 컴포넌트 | 설명 |
 |----------|------|
-| `RecruitCard` | 모집 목록 카드 (유형·완성도·역할·지원수) |
+| `RecruitCard` | 모집 목록 카드 (유형·완성도·역할·지원수·기술 스택 태그) |
+| `TechStackTags` | 기술 스택 뱃지 목록 (옅은 앰버 뱃지, 카드에선 3~4개+"+N", 0개면 접힘) |
 | `CompletenessGauge` | 완성도 바 + % (Progress 감쌈) |
 | `PlannerGuideCard` | 기획자 안내 카드 (앰버 박스) |
 | `StructuredForm` | 구조화 기획 폼 (4개 질문) |
 | `RoleInput` | 역할+인원 동적 추가 입력 |
+| `TechStackInput` | 스택 태그 입력 (Enter로 추가·칩 삭제, 작성 폼용). 선택 입력 — PLAN 모집은 비워도 됨 |
 | `ApplyBar` | 상세 하단 고정 지원 바 |
 
 ### features/community/components/
