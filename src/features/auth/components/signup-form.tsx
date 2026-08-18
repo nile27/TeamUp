@@ -8,14 +8,11 @@ import { signup } from "../actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
-import { useSearchParams } from "next/navigation"
 
 export function SignupForm() {
   const [state, formAction, isPending] = useActionState(signup, null)
   const [isTransitioning, startTransition] = useTransition()
-  const searchParams = useSearchParams()
 
   const {
     register,
@@ -39,9 +36,6 @@ export function SignupForm() {
         setError(key as any, { type: "server", message })
       })
     }
-    if (state?.error) {
-      toast.error(state.error)
-    }
   }, [state, setError])
 
   // 성공 메시지 (actions.ts에서 redirect('/?signup=success')로 보낸 경우 등 처리)
@@ -63,6 +57,12 @@ export function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {state?.error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email">이메일</Label>
         <Input
@@ -96,11 +96,14 @@ export function SignupForm() {
         <Input
           id="password"
           type="password"
+          placeholder="영문, 숫자, 특수문자 포함 8자 이상"
           {...register("password")}
           disabled={isLoading}
         />
-        {errors.password && (
+        {errors.password ? (
           <p className="text-sm text-destructive">{errors.password.message}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">영문, 숫자, 특수문자를 모두 포함해 8자 이상 입력해주세요.</p>
         )}
       </div>
 

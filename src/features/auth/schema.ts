@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// 영문 + 숫자 + 특수문자 조합 (회원가입 시 새 비밀번호 생성 규칙)
+const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+
 export const loginSchema = z.object({
   email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
   password: z
@@ -11,7 +14,10 @@ export const signupSchema = z.object({
   email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
   password: z
     .string()
-    .min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
+    .min(8, { message: "비밀번호는 최소 8자 이상이어야 합니다." })
+    .regex(PASSWORD_COMPLEXITY_REGEX, {
+      message: "영문, 숫자, 특수문자를 모두 포함해야 합니다.",
+    }),
   nickname: z
     .string()
     .min(2, { message: "닉네임은 2자 이상이어야 합니다." })

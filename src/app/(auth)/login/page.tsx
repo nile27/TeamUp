@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import Link from "next/link"
 import { LoginForm } from "@/features/auth/components/login-form"
 import { SocialButtons } from "@/features/auth/components/social-buttons"
@@ -22,7 +23,9 @@ export default function LoginPage() {
             </p>
           </div>
           
-          <LoginForm />
+          <Suspense fallback={<div>Loading form...</div>}>
+            <LoginForm />
+          </Suspense>
           
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

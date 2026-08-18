@@ -6,6 +6,7 @@ import { logout } from '@/features/auth/actions';
 export async function AppNav() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  console.log("AppNav render. User:", user?.id);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -1,6 +1,11 @@
 import Link from 'next/link';
+import { createClient } from '@/server/supabase';
+import { logout } from '@/features/auth/actions';
 
-export function LandingHeader() {
+export async function LandingHeader() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-[8px] border-b border-brand-line">
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
@@ -23,15 +28,36 @@ export function LandingHeader() {
           </Link>
         </nav>
         <div className="flex items-center gap-3.5 text-[15px]">
-          <Link
-            href="/login"
-            className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
-          >
-            로그인
-          </Link>
-          <Link href="/signup" className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors">
-            회원가입
-          </Link>
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
+              >
+                대시보드
+              </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors"
+                >
+                  로그아웃
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
+              >
+                로그인
+              </Link>
+              <Link href="/signup" className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors">
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useTransition } from "react"
+import { useActionState, useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { loginSchema, type LoginInput } from "../schema"
@@ -8,12 +8,13 @@ import { login } from "../actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, null)
   const [isTransitioning, startTransition] = useTransition()
+  const [signupSuccess, setSignupSuccess] = useState(false)
 
   const {
     register,
@@ -30,15 +31,29 @@ export function LoginForm() {
   })
 
   useEffect(() => {
+    if (state?.success) {
+      window.location.href = "/"
+      return
+    }
+    
     if (state?.fieldErrors) {
       Object.entries(state.fieldErrors).forEach(([key, message]) => {
         setError(key as any, { type: "server", message })
       })
     }
-    if (state?.error) {
-      toast.error(state.error)
-    }
   }, [state, setError])
+
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get("signup") === "success") {
+      setSignupSuccess(true)
+
+      // Remove the parameter from the URL so it doesn't show again on refresh
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete("signup")
+      window.history.replaceState({}, "", newUrl)
+    }
+  }, [searchParams])
 
   const onSubmit = (data: LoginInput) => {
     const formData = new FormData()
@@ -53,6 +68,18 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {signupSuccess && (
+        <div className="rounded-md border border-green-600/30 bg-green-50 px-4 py-3 text-sm text-green-700">
+          회원가입이 완료되었습니다. 로그인해주세요.
+        </div>
+      )}
+
+      {state?.error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email">이메일</Label>
         <Input

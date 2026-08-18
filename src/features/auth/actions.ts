@@ -9,6 +9,7 @@ import { prisma } from "@/server/db"
 export type AuthActionState = {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
 } | null
 
 export async function login(prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -31,19 +32,30 @@ export async function login(prevState: AuthActionState, formData: FormData): Pro
   })
 
   if (error) {
-    return { 
+    console.error("Login Error:", { code: error.code, status: error.status, message: error.message })
+
+    if (error.code === "email_not_confirmed") {
+      return {
+        error: "이메일 인증이 필요합니다. 받은 편지함을 확인해주세요.",
+        fieldErrors: { email: "이메일 인증이 필요합니다." }
+      }
+    }
+
+    return {
       error: "이메일 또는 비밀번호가 일치하지 않습니다.",
       fieldErrors: { email: "이메일 또는 비밀번호가 일치하지 않습니다." }
     }
   }
 
-  revalidatePath("/")
-  redirect("/")
+  revalidatePath("/", "layout")
+  return { success: true } as any
 }
 
 export async function signup(prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const data = Object.fromEntries(formData.entries())
+  console.log("Signup Data:", data)
   const parsed = signupSchema.safeParse(data)
+  console.log("Parsed Success:", parsed.success)
   
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {}
@@ -67,13 +79,35 @@ export async function signup(prevState: AuthActionState, formData: FormData): Pr
   })
 
   if (error) {
+    console.error("Signup Error:", { code: error.code, status: error.status, message: error.message })
+
     if (error.message.includes("already registered") || error.message.includes("already exists")) {
-      return { 
+      return {
         error: "회원가입에 실패했습니다.",
         fieldErrors: { email: "이미 가입된 이메일입니다." }
       }
     }
-    return { error: error.message }
+
+    if (error.code === "over_email_send_rate_limit") {
+      return { error: "이메일 발송 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
+    }
+
+    if (error.code === "over_request_rate_limit" || error.status === 429) {
+      return { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
+    }
+
+    return { error: "회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." }
+  }
+  
+  console.log("Supabase Auth Success:", authData.user?.id)
+
+  // Supabase는 이메일 열거(enumeration) 방지를 위해 이미 가입된 이메일이어도
+  // error 없이 identities: [] 를 반환하는 경우가 있음 (실제로는 세션/신규 계정 아님)
+  if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
+    return {
+      error: "회원가입에 실패했습니다.",
+      fieldErrors: { email: "이미 가입된 이메일입니다." }
+    }
   }
 
   if (authData.user) {
@@ -104,14 +138,15 @@ export async function signup(prevState: AuthActionState, formData: FormData): Pr
   // 가장 단순하게는 로그인 페이지로 리다이렉트하거나 홈으로 보냅니다.
   // 성공 메시지는 login 후 리다이렉트 시 확인하기 어려우므로, 
   // 여기서는 클라이언트 측에서 상태를 받지 못하고 바로 넘어갑니다.
-  revalidatePath("/")
-  redirect("/?signup=success")
+  // 성공 시 로그인 페이지로 리다이렉트
+  revalidatePath("/", "layout")
+  redirect("/login?signup=success")
 }
 
 export async function logout() {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  revalidatePath("/")
+  revalidatePath("/", "layout")
   redirect("/login")
 }
 

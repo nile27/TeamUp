@@ -1,25 +1,32 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { socialLogin } from "../actions"
-import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 export function SocialButtons() {
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   const handleSocialLogin = (provider: "google" | "kakao") => {
+    setError(null)
     startTransition(async () => {
       const result = await socialLogin(provider)
       if (result?.error) {
-        toast.error(result.error)
+        setError(result.error)
       }
     })
   }
 
   return (
     <div className="flex flex-col space-y-3">
+      {error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
       <Button
         type="button"
         variant="outline"
