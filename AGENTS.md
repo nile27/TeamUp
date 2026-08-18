@@ -21,10 +21,20 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능)
 - [x] 랜딩 이관 (_design-mockups/landing.html → components/landing)
 - [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
-- [x] 인증 (features/auth) — 폼(login/signup/social)·actions·schema·`/login`·`/signup`·`/auth/callback` 완성. ⚠️ 실 회원가입 테스트는 Supabase "Confirm email" OFF + 진짜 이메일 필요 (가짜 이메일은 `email_address_invalid`로 거부됨). 코드 자체는 정상.
-- [ ] 커뮤니티 (features/community) — `post-list-item.tsx`만 있음. 페이지·actions·queries 미착수
-- [ ] 모집 ★핵심 (features/recruit) — actions·queries·schema + 컴포넌트 5개(카드·게이지·techStack 입력/태그/필터)·`/recruit` 목록 있음. 상세/작성 페이지 마무리 필요 ← **지금 여기**
-- [ ] 대시보드 + 반응형 + 배포
+- [x] 인증 (features/auth) — 이메일 회원가입·로그인 동작 확인 완료(Supabase "Confirm email" OFF + 진짜 이메일). 폼·actions·schema·`/login`·`/signup`·`/auth/callback` 완성. 🔜 **소셜 로그인(구글/카카오 OAuth)은 나중에 추가** — 코드는 있으나 Supabase Provider 설정+실테스트 미완. MVP 흐름 먼저 밀고 후순위로.
+- [x] 커뮤니티 (features/community) — 목록(`/community`, 말머리 필터+페이지네이션)·상세(`/community/[id]`, 댓글+승격배너)·작성(`/community/new`) 완성. `queries.ts`/`actions.ts`/`schema.ts`/`CommentList`/`PromoteBanner`/`CommunityForm`/`CommunityTagFilter` 신규.
+- [x] 모집 ★핵심 (features/recruit) — 상세(`/recruit/[id]`, ISR: `unstable_cache` + `updateTag`)·작성(`/recruit/new`, 기획자 3종 장치) 완성. `completeness.ts`·`RecruitForm`·`PlannerGuideCard`·`StructuredForm`·`RoleInput`·`ApplyBar` 신규. `applyToRecruit` 지원 액션(중복 지원 방지) 포함.
+- [x] 대시보드 (`/dashboard`, 동적) — 프로필 요약 + 탭(내 모집/내 글/지원한 모집), 빈 상태 포함
+- [x] Playwright E2E (`e2e/`) — 인증·모집작성·모집목록·지원·커뮤니티·대시보드·상태(404/폼검증) 7스펙, `npm run e2e`. 16 passed / 1 skipped / 0 failed
+- [ ] 반응형 + 배포 ← **지금 여기**
+
+> 상세 리포트: `docs/report/screens-report-2026-08-18.md` (만든 화면·컴포넌트·핵심 로직·미완 과제), `docs/report/e2e-report-2026-08-18.md` (E2E 결과 + P2/P3 발견사항)
+
+## 🔜 나중에 추가 (지금은 보류 — MVP 흐름 먼저)
+
+> 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
+
+- **소셜 로그인 (구글/카카오 OAuth)** — 코드(`social-buttons.tsx`, `socialLogin` 액션, `/auth/callback`)는 있음. Supabase Provider 설정 + 실테스트만 나중에. 지금은 이메일 로그인으로 충분.
 
 ---
 
