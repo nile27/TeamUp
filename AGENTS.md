@@ -21,9 +21,9 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능)
 - [x] 랜딩 이관 (_design-mockups/landing.html → components/landing)
 - [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
-- [ ] 인증 (features/auth) ← **지금 여기**
-- [ ] 커뮤니티 (features/community)
-- [ ] 모집 ★핵심 (features/recruit)
+- [x] 인증 (features/auth) — 폼(login/signup/social)·actions·schema·`/login`·`/signup`·`/auth/callback` 완성. ⚠️ 실 회원가입 테스트는 Supabase "Confirm email" OFF + 진짜 이메일 필요 (가짜 이메일은 `email_address_invalid`로 거부됨). 코드 자체는 정상.
+- [ ] 커뮤니티 (features/community) — `post-list-item.tsx`만 있음. 페이지·actions·queries 미착수
+- [ ] 모집 ★핵심 (features/recruit) — actions·queries·schema + 컴포넌트 5개(카드·게이지·techStack 입력/태그/필터)·`/recruit` 목록 있음. 상세/작성 페이지 마무리 필요 ← **지금 여기**
 - [ ] 대시보드 + 반응형 + 배포
 
 ---
@@ -194,3 +194,4 @@ AI 에이전트(Claude Code, Antigravity 등)가 커밋 메시지를 추천할 �
 - `DESIGN.md` — 디자인 시스템
 - `component_breakdown` — 컴포넌트 분리
 - `states_and_validation` — 빈/로딩/에러 + 폼 검증
+- `DEVLOG.md` — 데일리 작업 로그 (그날 한 일·막힌 것·다음 할 일. 작업 끝낼 때 맨 위에 추가)
