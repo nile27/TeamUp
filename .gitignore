@@ -42,3 +42,8 @@ next-env.d.ts
 
 # ignore test pages
 /src/app/components-test/
+
+# playwright e2e
+/test-results/
+/playwright-report/
+/e2e/.auth/
