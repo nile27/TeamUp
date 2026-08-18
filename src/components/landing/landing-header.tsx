@@ -14,16 +14,16 @@ export async function LandingHeader() {
           TeamUp
         </div>
         <nav className="hidden md:flex gap-7 text-[15px] font-medium">
-          <Link href="#" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
+          <Link href="/recruit" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
             팀 찾기
           </Link>
-          <Link href="#" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
+          <Link href="/community?tag=IDEA" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
             아이디어 랩
           </Link>
-          <Link href="#" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
+          <Link href="/community" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
             커뮤니티
           </Link>
-          <Link href="#" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
+          <Link href="#about" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
             소개
           </Link>
         </nav>
