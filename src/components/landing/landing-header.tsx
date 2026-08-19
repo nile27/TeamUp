@@ -9,10 +9,9 @@ export async function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-[8px] border-b border-brand-line">
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xl font-extrabold">
-          <span className="w-[22px] h-[22px] rounded-md bg-brand-amber"></span>
-          TeamUp
-        </div>
+        <Link href="/" className="flex items-center">
+          <img src="/brand/logo-horizontal.png" alt="TeamUp" className="h-7 w-auto" />
+        </Link>
         <nav className="hidden md:flex gap-7 text-[15px] font-medium">
           <Link href="/recruit" className="text-brand-ink-soft hover:text-brand-ink transition-colors">
             팀 찾기
