@@ -6,7 +6,7 @@
 //
 // 확정 사항:
 // - 완성도(completeness): 저장 방식 (작성/수정 시 계산해서 저장)
-// - 좋아요/북마크: Phase 2로 미룸 (스키마에 없음, 나중에 별도 테이블로 추가)
+// - 좋아요(CommunityPostLike)/저장(RecruitBookmark): 별도 조인 테이블로 구현. 모집 조회수(Recruit.viewCount) 추가
 // - 역할(RecruitRole): 별도 테이블 (역할별 인원 관리)
 // - 임베딩(embedding): Phase 2 AI 매칭 대비 nullable 필드 미리 확보
 // ============================================
@@ -27,16 +27,18 @@ datasource db {
 // id는 Supabase auth.users의 uuid와 매칭.
 // ============================================
 model User {
-  id        String   @id @db.Uuid // Supabase auth user id와 동일
-  email     String   @unique
+  id        String  @id @db.Uuid // Supabase auth user id와 동일
+  email     String  @unique
   nickname  String
   bio       String?
   avatarUrl String?
 
-  communityPosts CommunityPost[]
-  recruits       Recruit[]
-  applications   Application[]
-  comments       Comment[]
+  communityPosts     CommunityPost[]
+  recruits           Recruit[]
+  applications       Application[]
+  comments           Comment[]
+  recruitBookmarks   RecruitBookmark[]
+  communityPostLikes CommunityPostLike[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -56,6 +58,7 @@ model CommunityPost {
   authorId String @db.Uuid
 
   comments Comment[]
+  likes    CommunityPostLike[]
 
   // 커뮤니티 → 모집 승격 다리
   promotedRecruit Recruit? @relation("PromotedFrom")
@@ -69,9 +72,9 @@ model CommunityPost {
 }
 
 enum CommunityTag {
-  IDEA     // 아이디어
+  IDEA // 아이디어
   QUESTION // 질문
-  ETC      // 기타
+  ETC // 기타
 }
 
 // ============================================
@@ -104,6 +107,10 @@ model Recruit {
 
   roles        RecruitRole[]
   applications Application[]
+  bookmarks    RecruitBookmark[]
+
+  // 조회수 — 상세 페이지 진입 시 증가 (캐시된 조회 쿼리와 분리된 별도 mutation)
+  viewCount Int @default(0)
 
   // 커뮤니티 글에서 승격된 경우 원본 참조
   promotedFrom   CommunityPost? @relation("PromotedFrom", fields: [promotedFromId], references: [id])
@@ -124,14 +131,14 @@ model Recruit {
 }
 
 enum RecruitType {
-  DEV  // 개발자 모집
+  DEV // 개발자 모집
   PLAN // 기획자 모집
 }
 
 enum RecruitStatus {
-  OPEN   // 모집 중
+  OPEN // 모집 중
   CLOSED // 모집 마감
-  DONE   // 팀 결성 완료
+  DONE // 팀 결성 완료
 }
 
 // ============================================
@@ -171,7 +178,7 @@ model Application {
 }
 
 enum ApplicationStatus {
-  PENDING  // 대기 중
+  PENDING // 대기 중
   ACCEPTED // 수락됨
   REJECTED // 거절됨
 }
@@ -195,14 +202,37 @@ model Comment {
 }
 
 // ============================================
-// [Phase 2 예정] — 지금은 주석으로만
+// RecruitBookmark — 모집 저장(북마크)
 // ============================================
-// model Like {
-//   id        String   @id @default(cuid())
-//   userId    String   @db.Uuid
-//   recruitId String?
-//   postId    String?
-//   createdAt DateTime @default(now())
-//   @@unique([userId, recruitId])
-//   @@unique([userId, postId])
-// }
+model RecruitBookmark {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+
+  recruit   Recruit @relation(fields: [recruitId], references: [id], onDelete: Cascade)
+  recruitId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, recruitId]) // 중복 저장 방지, 토글 기준
+  @@index([recruitId])
+}
+
+// ============================================
+// CommunityPostLike — 커뮤니티 글 좋아요
+// ============================================
+model CommunityPostLike {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+
+  post   CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId]) // 중복 좋아요 방지, 토글 기준
+  @@index([postId])
+}

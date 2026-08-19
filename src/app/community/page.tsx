@@ -44,7 +44,7 @@ async function CommunityPostList({ tag, page }: { tag?: CommunityTag; page: numb
             title: post.title,
             author: post.author.nickname,
             createdAt: new Date(post.createdAt).toLocaleDateString("ko-KR"),
-            likeCount: 0,
+            likeCount: post._count.likes,
             commentCount: post._count.comments,
           }}
         />

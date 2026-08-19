@@ -14,7 +14,7 @@ export async function getCommunityPosts(tag: CommunityTag | undefined, page: num
       take: PAGE_SIZE,
       include: {
         author: { select: { nickname: true } },
-        _count: { select: { comments: true } },
+        _count: { select: { comments: true, likes: true } },
       },
     }),
     prisma.communityPost.count({ where }),
@@ -33,6 +33,13 @@ export async function getCommunityPostById(id: string) {
         orderBy: { createdAt: "asc" },
         include: { author: { select: { nickname: true } } },
       },
+      _count: { select: { likes: true } },
     },
+  });
+}
+
+export async function getLikeForUser(postId: string, userId: string) {
+  return prisma.communityPostLike.findUnique({
+    where: { userId_postId: { userId, postId } },
   });
 }

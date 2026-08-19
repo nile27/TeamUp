@@ -12,7 +12,7 @@ export async function getRecruitList(techStackFilter?: string[]) {
     include: {
       roles: true,
       _count: {
-        select: { applications: true }
+        select: { applications: true, bookmarks: true }
       }
     }
   });
@@ -29,7 +29,7 @@ export function getRecruitById(id: string) {
         include: {
           author: { select: { id: true, nickname: true, avatarUrl: true } },
           roles: true,
-          _count: { select: { applications: true } },
+          _count: { select: { applications: true, bookmarks: true } },
         },
       });
     },
@@ -41,6 +41,14 @@ export function getRecruitById(id: string) {
 export async function getApplicationForUser(recruitId: string, userId: string) {
   return prisma.application.findUnique({
     where: { applicantId_recruitId: { applicantId: userId, recruitId } },
+  });
+}
+
+// 로그인 유저가 이 모집을 저장(북마크)했는지 — getRecruitById는 모든 유저가 공유하는
+// ISR 캐시라 유저별 상태를 못 담음. 별도의 캐시 안 되는 쿼리로 분리.
+export async function getBookmarkForUser(recruitId: string, userId: string) {
+  return prisma.recruitBookmark.findUnique({
+    where: { userId_recruitId: { userId, recruitId } },
   });
 }
 
