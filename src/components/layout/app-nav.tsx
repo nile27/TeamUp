@@ -32,7 +32,7 @@ export async function AppNav() {
             {user ? (
               <>
                 <Link href="/dashboard" className={buttonVariants({ variant: "ghost" })}>
-                  대시보드
+                  마이페이지
                 </Link>
                 <form action={logout}>
                   <button type="submit" className={buttonVariants({ variant: "outline" })}>

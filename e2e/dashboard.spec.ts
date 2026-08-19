@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("대시보드", () => {
+test.describe("마이페이지", () => {
   test("탭 3개(내 모집/내 글/지원한 모집)가 데이터 또는 빈 상태를 보여준다", async ({ page }) => {
     await page.goto("/dashboard");
 

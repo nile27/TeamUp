@@ -12,7 +12,7 @@ export function CompletenessGauge({ value, label = "기획 완성도" }: Complet
         <span className="font-medium text-[#2B2620]">{label}</span>
         <span className="font-bold text-[#FFA940]">{value}%</span>
       </div>
-      <Progress value={value} className="h-2 [&>div]:bg-[#FFA940]" />
+      <Progress value={value} className="h-2" />
     </div>
   );
 }

@@ -38,7 +38,9 @@ export default async function RecruitDetailPage({
 
   return (
     <AppShell>
-      <div className="container mx-auto max-w-4xl px-4 py-8 pb-4">
+      {/* 짧은 글에서도 ApplyBar가 뷰포트 하단에 붙도록(중간에 붕 뜨지 않게) 최소 높이 확보 */}
+      <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
+        <div className="container mx-auto max-w-4xl px-4 py-8 pb-4 flex-1">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -106,6 +108,7 @@ export default async function RecruitDetailPage({
         alreadyApplied={!!application}
         isClosed={recruit.status !== "OPEN"}
       />
+      </div>
     </AppShell>
   );
 }

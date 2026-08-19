@@ -16,7 +16,7 @@ test.describe("인증", () => {
     // Confirm email이 꺼져 있으면 signUp() 시점에 세션이 생기고, proxy.ts 미들웨어가
     // 이미 로그인된 사용자의 /login 접근을 "/"로 튕겨내 "회원가입 완료" 배너를 볼 새 없이
     // 곧장 로그인 상태가 된다. 켜져 있으면 /login에 남아 배너가 보인다.
-    const dashboardLink = page.getByRole("link", { name: "대시보드" });
+    const dashboardLink = page.getByRole("link", { name: "마이페이지" });
     const autoLoggedIn = await dashboardLink
       .waitFor({ state: "visible", timeout: 15_000 })
       .then(() => true)
@@ -38,7 +38,7 @@ test.describe("인증", () => {
     };
 
     await signupAndLogin(page, user);
-    await expect(page.getByRole("link", { name: "대시보드" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "마이페이지" })).toBeVisible();
 
     await page.getByRole("button", { name: "로그아웃" }).click();
 

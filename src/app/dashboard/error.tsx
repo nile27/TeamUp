@@ -19,7 +19,7 @@ export default function DashboardError({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 text-center">
       <div className="text-4xl mb-4">🚨</div>
-      <h2 className="text-2xl font-bold text-foreground mb-2">대시보드를 불러오는 중 오류가 발생했습니다</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-2">마이페이지를 불러오는 중 오류가 발생했습니다</h2>
       <p className="text-muted-foreground mb-6">일시적인 문제일 수 있습니다. 다시 시도해 주세요.</p>
       <Button onClick={() => reset()}>다시 시도</Button>
     </div>

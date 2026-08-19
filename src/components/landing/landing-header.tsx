@@ -34,7 +34,7 @@ export async function LandingHeader() {
                 href="/dashboard"
                 className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
               >
-                대시보드
+                마이페이지
               </Link>
               <form action={logout}>
                 <button

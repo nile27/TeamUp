@@ -32,7 +32,7 @@ export function TechStackUrlFilter() {
   }, [currentStacks, pathname, router, searchParams]);
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div data-testid="tech-stack-filter" className="flex flex-wrap gap-2 mb-6">
       {PREDEFINED_STACKS.map(stack => {
         const isActive = currentStacks.includes(stack);
         return (

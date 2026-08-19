@@ -25,7 +25,7 @@ export async function signupAndLogin(page: Page, user: TestUser) {
 
   // 미들웨어가 "/"로 튕겨내는 경우(Confirm email OFF → 이미 로그인 상태)를 최대 15초간 기다린다.
   // dev 서버 첫 컴파일 때문에 느릴 수 있어 넉넉히 잡음. 안 튕기면 /login에 그대로 남는다.
-  const dashboardLink = page.getByRole("link", { name: "대시보드" });
+  const dashboardLink = page.getByRole("link", { name: "마이페이지" });
   const autoLoggedIn = await dashboardLink
     .waitFor({ state: "visible", timeout: 15_000 })
     .then(() => true)
@@ -40,7 +40,7 @@ export async function signupAndLogin(page: Page, user: TestUser) {
   await page.getByRole("button", { name: "로그인" }).click();
 
   const confirmRequired = page.getByText("이메일 인증이 필요합니다");
-  const loggedIn = page.getByRole("link", { name: "대시보드" });
+  const loggedIn = page.getByRole("link", { name: "마이페이지" });
 
   await Promise.race([
     loggedIn.waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined),

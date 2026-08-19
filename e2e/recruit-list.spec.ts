@@ -5,7 +5,8 @@ test.describe("모집 목록", () => {
     await page.goto("/recruit");
 
     // TechStackUrlFilter의 필터 칩은 Badge(<span>)라 role="button"이 없음 — 텍스트로 선택.
-    await page.getByText("React", { exact: true }).click();
+    // 시드 데이터로 카드 안에도 "React" 태그가 여럿 나오므로 필터 영역으로 범위를 좁힌다.
+    await page.getByTestId("tech-stack-filter").getByText("React", { exact: true }).click();
     await expect(page).toHaveURL(/[?&]stack=React/);
 
     // 필터 결과는 매칭 카드 목록 또는 STATES.md의 빈 상태 카드 둘 중 하나여야 한다.

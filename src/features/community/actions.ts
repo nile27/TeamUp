@@ -45,6 +45,7 @@ export async function createPost(
   }
 
   revalidatePath("/community");
+  revalidatePath("/dashboard");
   redirect(`/community/${postId}`);
 }
 

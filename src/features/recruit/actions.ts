@@ -82,6 +82,7 @@ export async function createRecruit(
   }
 
   revalidatePath("/recruit");
+  revalidatePath("/dashboard");
   redirect(`/recruit/${recruitId}`);
 }
 
@@ -121,5 +122,6 @@ export async function applyToRecruit(
   }
 
   updateTag(`recruit-${recruitId}`);
+  revalidatePath("/dashboard");
   return { success: true };
 }
