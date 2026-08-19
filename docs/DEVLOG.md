@@ -11,6 +11,12 @@
 ## 2026-08-19 (수)
 
 **한 일**
+- **소셜 로그인(구글) 실연동 완료** (`feat/social-login-hardening` 브랜치). 코드는 이전부터 있었지만 Provider 미설정 상태였던 것.
+  - 코드 리뷰하면서 버그 2개 발견·수정: (1) OAuth 실패 시 `/login?error=...`로 리다이렉트되는데 로그인 폼이 `error` 쿼리를 안 읽어서 실패해도 무반응이던 것 → 배너로 안내. (2) 카카오는 비즈니스 채널 연동 전엔 이메일 동의항목을 못 받아 `email`이 빈 값으로 올 수 있는데, `User.email`이 `@unique`라 빈 문자열로 두 명 이상 가입하면 충돌하던 잠재 버그 → auth id 기반 고유 이메일로 대체.
+  - 사용자 우려사항(이메일 가입 계정 + 나중에 구글 로그인 시 중복 계정 생기는지) 확인 — Supabase의 automatic identity linking(같은 이메일, 양쪽 인증됨 → 자동 병합)이 기본 동작이라 문제없음을 설명. 혹시 몰라 그 자동 병합이 실패하는 예외 상황(Prisma email unique 충돌)에 대한 방어 코드도 추가 — 조용히 실패해 "로그인은 됐는데 프로필 없는" 반쪽 상태로 남는 대신 세션 정리 후 안내 메시지로 로그인 페이지로.
+  - Google Cloud Console에 OAuth 클라이언트 등록(사용자가 직접 진행, 기존 프로젝트에 TeamUp 전용 Client ID만 추가) + Supabase Provider 설정 + 실제 구글 계정으로 로그인 테스트.
+  - **실제 검증**: 기존 이메일 계정(`ddj03104@gmail.com`)과 같은 Gmail로 구글 로그인 시도 → DB에서 `auth.identities` 직접 조회해 같은 `user_id`에 `email`/`google` identity가 둘 다 연결된 것 확인(중복 계정 안 생김, 자동 병합 정상 동작).
+  - 카카오는 Provider 설정 전(코드는 준비돼있어 나중에 동일 흐름으로 진행 가능).
 - **기술스택 프리셋 전환** (`feat/tech-stack-preset` 브랜치). 자유 텍스트 입력(`TechStackInput`, Enter로 태그 추가)이 "React"/"React.js"/"ReactJS"처럼 같은 기술이 다른 태그로 쪼개지는 문제가 있어서, 고정 프리셋(`config/tech-stack.ts`, 5개 카테고리 26개 항목)에서만 클릭으로 고르도록 전환. `TechStackUrlFilter`(모집 목록 필터)도 같은 프리셋을 공유해서 목록에 있던 별도의 9개짜리 목록과 통일. 서버 스키마(`createRecruitSchema`)에도 프리셋 밖 값 거부하는 `refine` 검증 추가(클라이언트 우회 방지). 모집 유형 워딩 논의하다가 나온 "역할 기반 필터(프론트/백엔드/디자이너/기획자)"로 바꾸는 안은 `RecruitRole.name`도 자유 텍스트라 같은 표준화 문제가 있어서 보류, 이번엔 기술스택만 먼저 처리.
 - **좋아요/저장/조회수 기능 구현** (MVP 배포 후 첫 후속 기능, `feat/like-bookmark-viewcount` 브랜치에서 작업). Phase 2로 미뤄뒀던 것 중 사용자가 우선순위로 선택.
   - 스키마: `RecruitBookmark`(모집 저장), `CommunityPostLike`(글 좋아요) 조인 테이블 신설 + `Recruit.viewCount` 필드 추가(`CommunityPost.viewCount`는 이미 있었는데 미사용 상태였음). 마이그레이션 적용.
@@ -43,10 +49,10 @@
 - E2E 테스트에서 `<Button render={<Link/>}>`는 role이 여전히 `"button"`이라 새로 추가한 "지원자 확인하기" 링크도 `getByRole("button", ...)`로 셀렉트해야 함(어제 겪은 것과 동일 패턴, 계속 반복되니 팀 컨벤션으로 기억해둘 것).
 
 **다음에 할 것 (사용자 확인 필요 — 우선순위/스코프 결정 후 진행)**
-- **기술스택 입력 방식** — 자유 텍스트 입력 유지 vs 선택지(자동완성/프리셋) 제공.
+- **카카오 로그인** — 구글과 동일 코드 경로 재사용 가능. Kakao Developers 앱 등록 + Supabase Provider 설정만 남음.
 - **프로필 고도화** — 자기소개 외에 포트폴리오/이력을 보여줄 수단(마크다운 에디터 등). 구조화 폼 4문항도 부족할 수 있다는 의견.
-- **좋아요/저장·조회수** — RecruitCard에 이미 아이콘은 있는데 실제 기능 없음(PRD상 원래 Phase 2 범위). 지금 할지 재확인.
-- 이 외 원래 목록: 소셜 로그인, `screens-report`/`e2e-report`의 P2/P3, E2E CI화 시 Auth 계정 정리. (Vercel 배포는 완료 — 위 참고)
+- **역할 기반 필터** — 기술스택 프리셋 작업 중 논의됐다가 보류된 것(`RecruitRole.name`도 자유 텍스트라 표준화 필요). 프론트/백엔드/디자이너/기획자로 목록 필터 단순화하는 안.
+- 이 외 원래 목록: `screens-report`/`e2e-report`의 P2/P3, E2E CI화 시 Auth 계정 정리. (Vercel 배포·좋아요/저장/조회수·기술스택 프리셋·구글 로그인은 완료 — 위 참고)
 
 ---
 
