@@ -55,21 +55,28 @@ export default async function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {recruits.map((recruit) => (
-                  <RecruitCard
-                    key={recruit.id}
-                    data={{
-                      id: recruit.id,
-                      title: recruit.title,
-                      summary: recruit.content,
-                      type: RECRUIT_TYPE_LABEL[recruit.type],
-                      techStack: recruit.techStack,
-                      completeness: recruit.completeness,
-                      roles: recruit.roles.map((r) => ({ name: r.name, current: 0, total: r.count })),
-                      viewCount: 0,
-                      bookmarkCount: 0,
-                      isClosed: recruit.status !== "OPEN",
-                    }}
-                  />
+                  <div key={recruit.id} className="space-y-2">
+                    <RecruitCard
+                      data={{
+                        id: recruit.id,
+                        title: recruit.title,
+                        summary: recruit.content,
+                        type: RECRUIT_TYPE_LABEL[recruit.type],
+                        techStack: recruit.techStack,
+                        completeness: recruit.completeness,
+                        roles: recruit.roles.map((r) => ({ name: r.name, current: 0, total: r.count })),
+                        viewCount: 0,
+                        bookmarkCount: 0,
+                        isClosed: recruit.status !== "OPEN",
+                      }}
+                    />
+                    <Link
+                      href={`/recruit/${recruit.id}/applicants`}
+                      className="block text-center text-sm font-medium text-primary hover:underline"
+                    >
+                      지원자 보기 ({recruit._count.applications})
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}

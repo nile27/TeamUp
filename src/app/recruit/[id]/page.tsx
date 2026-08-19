@@ -107,6 +107,7 @@ export default async function RecruitDetailPage({
         isAuthor={user?.id === recruit.authorId}
         alreadyApplied={!!application}
         isClosed={recruit.status !== "OPEN"}
+        applicationCount={recruit._count.applications}
       />
       </div>
     </AppShell>

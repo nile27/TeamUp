@@ -125,3 +125,37 @@ export async function applyToRecruit(
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+// 모집 작성자가 지원자를 수락/거절. 작성자 본인인지 서버에서 다시 확인.
+export async function updateApplicationStatus(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const applicationId = String(formData.get("applicationId") || "");
+  const status = String(formData.get("status") || "");
+
+  if (status !== "ACCEPTED" && status !== "REJECTED") {
+    return;
+  }
+
+  const application = await prisma.application.findUnique({
+    where: { id: applicationId },
+    select: { recruitId: true, recruit: { select: { authorId: true } } },
+  });
+
+  if (!application || application.recruit.authorId !== user.id) {
+    redirect("/dashboard");
+  }
+
+  await prisma.application.update({
+    where: { id: applicationId },
+    data: { status },
+  });
+
+  revalidatePath(`/recruit/${application.recruitId}/applicants`);
+  revalidatePath("/dashboard");
+  redirect(`/recruit/${application.recruitId}/applicants`);
+}

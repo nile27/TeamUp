@@ -14,9 +14,17 @@ interface ApplyBarProps {
   isAuthor: boolean;
   alreadyApplied: boolean;
   isClosed: boolean;
+  applicationCount: number;
 }
 
-export function ApplyBar({ recruitId, isLoggedIn, isAuthor, alreadyApplied, isClosed }: ApplyBarProps) {
+export function ApplyBar({
+  recruitId,
+  isLoggedIn,
+  isAuthor,
+  alreadyApplied,
+  isClosed,
+  applicationCount,
+}: ApplyBarProps) {
   const [state, formAction, isPending] = useActionState(applyToRecruit, null);
   const [isTransitioning, startTransition] = useTransition();
   const [message, setMessage] = useState("");
@@ -44,7 +52,9 @@ export function ApplyBar({ recruitId, isLoggedIn, isAuthor, alreadyApplied, isCl
     <div className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto max-w-4xl px-4 py-4">
         {isAuthor ? (
-          <p className="text-center text-sm text-muted-foreground">내가 작성한 모집글이에요.</p>
+          <Button render={<Link href={`/recruit/${recruitId}/applicants`} />} nativeButton={false} className="w-full">
+            지원자 확인하기 ({applicationCount})
+          </Button>
         ) : !isLoggedIn ? (
           <Button render={<Link href="/login" />} nativeButton={false} className="w-full">
             로그인 후 지원하기
