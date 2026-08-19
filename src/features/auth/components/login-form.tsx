@@ -11,6 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
+const CALLBACK_ERROR_MESSAGE: Record<string, string> = {
+  "auth-callback-failed": "소셜 로그인 중 문제가 발생했어요. 다시 시도해주세요.",
+  "email-already-registered": "이미 이메일로 가입된 계정이에요. 이메일/비밀번호로 로그인해주세요.",
+}
+
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, null)
   const [isTransitioning, startTransition] = useTransition()
@@ -44,15 +49,20 @@ export function LoginForm() {
 
   const searchParams = useSearchParams()
   const signupSuccess = searchParams.get("signup") === "success"
+  const callbackError = searchParams.get("error")
+  const callbackErrorMessage = callbackError
+    ? (CALLBACK_ERROR_MESSAGE[callbackError] ?? CALLBACK_ERROR_MESSAGE["auth-callback-failed"])
+    : null
 
   useEffect(() => {
-    if (signupSuccess) {
+    if (signupSuccess || callbackError) {
       // Remove the parameter from the URL so it doesn't show again on refresh
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete("signup")
+      newUrl.searchParams.delete("error")
       window.history.replaceState({}, "", newUrl)
     }
-  }, [signupSuccess])
+  }, [signupSuccess, callbackError])
 
   const onSubmit = (data: LoginInput) => {
     const formData = new FormData()
@@ -70,6 +80,12 @@ export function LoginForm() {
       {signupSuccess && (
         <div className="rounded-md border border-green-600/30 bg-green-50 px-4 py-3 text-sm text-green-700">
           회원가입이 완료되었습니다. 로그인해주세요.
+        </div>
+      )}
+
+      {callbackErrorMessage && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {callbackErrorMessage}
         </div>
       )}
 
