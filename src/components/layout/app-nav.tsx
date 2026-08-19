@@ -14,7 +14,7 @@ export async function AppNav() {
         <div className="mr-4 flex items-center">
           <Link href="/" className="mr-8 flex items-center">
             <img
-              src="/brand/logo-horizontal.png"
+              src="/brand/logo-wordmark.png"
               alt="TeamUp"
               className="h-7 w-auto"
             />
