@@ -14,6 +14,7 @@ TeamUp 데이터베이스 설계 문서. Prisma + Supabase(PostgreSQL) 기준. �
 | 좋아요/북마크 | **Phase 2로 미룸** | MVP 핵심은 매칭. 별도 테이블이라 나중에 추가해도 기존 스키마 영향 없음 |
 | 역할(RecruitRole) | **별도 테이블** | 역할별 인원("프론트 1명") 관리 위해. 문자열이면 확장 불가 |
 | 임베딩(embedding) | **nullable 필드 미리 확보** | Phase 2 AI 매칭 대비. 지금은 자리만, 나중에 pgvector로 |
+| 기술 스택 태그 | **`String[]` 배열** (별도 Tag 테이블 X) | MVP는 문자열 배열로 충분. 카드·필터·매칭에 사용. 정규화(오타 통일·자동완성·인기 태그)가 필요해지면 Phase 2에서 Tag 테이블로 승격 |
 
 ---
 
@@ -77,7 +78,7 @@ CommunityPost ─1:1─ Recruit    (승격 다리, promotedFrom, 선택적)
 ## 인덱스
 
 - `CommunityPost`: tag, createdAt (태그 필터 + 최신순)
-- `Recruit`: type, status, createdAt (유형 필터 + 상태 + 최신순)
+- `Recruit`: type, status, createdAt (유형 필터 + 상태 + 최신순), techStack (GIN — 스택 태그 배열 필터)
 - `Application`: recruitId (모집별 지원자 조회)
 - `Comment`: postId (글별 댓글 조회)
 

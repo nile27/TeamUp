@@ -87,6 +87,10 @@ model Recruit {
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String @db.Uuid
 
+  // 기술 스택 태그 — 카드/필터/매칭용. MVP는 문자열 배열(정규화는 Phase 2 Tag 테이블로).
+  // 기획자 중심 모집(PLAN)은 비어 있을 수 있음 → UI에서 0개 상태 자연 처리.
+  techStack String[] @default([])
+
   // 구조화 폼 필드 (기획 완성도용) — 선택 입력
   problem      String? @db.Text // 어떤 문제를 겪었나요?
   targetUser   String? @db.Text // 누가 어떤 상황에 쓰나요?
@@ -116,6 +120,7 @@ model Recruit {
   @@index([type])
   @@index([status])
   @@index([createdAt])
+  @@index([techStack], type: Gin) // 배열 필터(has/hasSome)용 GIN 인덱스
 }
 
 enum RecruitType {
