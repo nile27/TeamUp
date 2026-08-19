@@ -37,8 +37,8 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
           techStack: recruit.techStack,
           completeness: recruit.completeness,
           roles: recruit.roles.map(r => ({ name: r.name, current: 0, total: r.count })),
-          viewCount: 0, 
-          bookmarkCount: 0, 
+          viewCount: recruit.viewCount,
+          bookmarkCount: recruit._count.bookmarks,
           isClosed: recruit.status !== "OPEN",
         };
         return <RecruitCard key={recruit.id} data={mappedData} />;

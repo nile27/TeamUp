@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
+import { Eye } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getRecruitById, getApplicationForUser } from "@/features/recruit/queries";
+import { getRecruitById, getApplicationForUser, getBookmarkForUser } from "@/features/recruit/queries";
+import { incrementRecruitViewCount } from "@/features/recruit/actions";
 import { CompletenessGauge } from "@/features/recruit/components/completeness-gauge";
 import { TechStackTags } from "@/features/recruit/components/tech-stack-tags";
 import { ApplyBar } from "@/features/recruit/components/apply-bar";
+import { BookmarkButton } from "@/features/recruit/components/bookmark-button";
 import { createClient } from "@/server/supabase";
 import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
@@ -32,7 +35,11 @@ export default async function RecruitDetailPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const application = user ? await getApplicationForUser(recruit.id, user.id) : null;
+  const [application, bookmark, viewCount] = await Promise.all([
+    user ? getApplicationForUser(recruit.id, user.id) : Promise.resolve(null),
+    user ? getBookmarkForUser(recruit.id, user.id) : Promise.resolve(null),
+    incrementRecruitViewCount(recruit.id),
+  ]);
 
   const hasStructuredInfo = STRUCTURED_QUESTIONS.some((q) => recruit[q.key]?.trim());
 
@@ -52,10 +59,20 @@ export default async function RecruitDetailPage({
               )}
             </div>
             <h1 className="text-2xl font-bold text-foreground">{recruit.title}</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               {recruit.author.nickname} · {new Date(recruit.createdAt).toLocaleDateString("ko-KR")}
+              <span data-testid="recruit-view-count" className="inline-flex items-center gap-1 ml-1">
+                <Eye className="h-3.5 w-3.5" />
+                {viewCount}
+              </span>
             </p>
           </div>
+          <BookmarkButton
+            recruitId={recruit.id}
+            isLoggedIn={!!user}
+            initialBookmarked={!!bookmark}
+            initialCount={recruit._count.bookmarks}
+          />
         </div>
 
         <TechStackTags tags={recruit.techStack} maxDisplay={recruit.techStack.length} />

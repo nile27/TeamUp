@@ -120,3 +120,48 @@ export async function promoteToRecruit(formData: FormData): Promise<void> {
   revalidatePath("/recruit");
   redirect(`/recruit/${recruitId}`);
 }
+
+// 상세 페이지 진입 시 호출. 커뮤니티 상세는 ISR이 아니라 매 요청 SSR이라
+// 캐시 걱정 없이 바로 늘리고 최신 값을 반환.
+export async function incrementPostViewCount(postId: string): Promise<number> {
+  try {
+    const post = await prisma.communityPost.update({
+      where: { id: postId },
+      data: { viewCount: { increment: 1 } },
+      select: { viewCount: true },
+    });
+    return post.viewCount;
+  } catch {
+    return 0;
+  }
+}
+
+// 좋아요 토글. 버튼 클릭으로 바로 호출하는 형태.
+export async function toggleCommunityPostLike(
+  postId: string
+): Promise<{ liked: boolean; count: number } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "로그인이 필요합니다." };
+  }
+
+  const existing = await prisma.communityPostLike.findUnique({
+    where: { userId_postId: { userId: user.id, postId } },
+  });
+
+  if (existing) {
+    await prisma.communityPostLike.delete({ where: { id: existing.id } });
+  } else {
+    try {
+      await prisma.communityPostLike.create({ data: { userId: user.id, postId } });
+    } catch (error) {
+      console.error("Toggle Like Error:", error);
+      return { error: "좋아요 처리 중 오류가 발생했습니다." };
+    }
+  }
+
+  const count = await prisma.communityPostLike.count({ where: { postId } });
+  revalidatePath("/dashboard");
+  return { liked: !existing, count };
+}

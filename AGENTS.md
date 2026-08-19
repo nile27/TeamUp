@@ -213,3 +213,13 @@ AI 에이전트(Claude Code, Antigravity 등)가 커밋 메시지를 추천할 �
 - `component_breakdown` — 컴포넌트 분리
 - `states_and_validation` — 빈/로딩/에러 + 폼 검증
 - `DEVLOG.md` — 데일리 작업 로그 (그날 한 일·막힌 것·다음 할 일. 작업 끝낼 때 맨 위에 추가)
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

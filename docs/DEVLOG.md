@@ -11,6 +11,13 @@
 ## 2026-08-19 (수)
 
 **한 일**
+- **좋아요/저장/조회수 기능 구현** (MVP 배포 후 첫 후속 기능, `feat/like-bookmark-viewcount` 브랜치에서 작업). Phase 2로 미뤄뒀던 것 중 사용자가 우선순위로 선택.
+  - 스키마: `RecruitBookmark`(모집 저장), `CommunityPostLike`(글 좋아요) 조인 테이블 신설 + `Recruit.viewCount` 필드 추가(`CommunityPost.viewCount`는 이미 있었는데 미사용 상태였음). 마이그레이션 적용.
+  - `toggleRecruitBookmark`/`toggleCommunityPostLike` — 버튼 클릭으로 바로 호출하는 토글 액션(폼이 아니라 `useTransition` + 직접 호출 패턴, `social-buttons.tsx`와 동일 스타일). `incrementRecruitViewCount`/`incrementPostViewCount` — 상세 페이지 진입 시 호출.
+  - `BookmarkButton`/`LikeButton` 컴포넌트 신규, 모집·커뮤니티 상세 페이지에 배치. `RecruitCard`/`PostListItem`은 이미 있던 아이콘 UI에 실제 값만 연결(하드코딩 0 제거).
+  - 실제 계정으로 토글→새로고침 반복 테스트하다가 버그 발견: 모집 저장 개수가 새로고침 후 0으로 리셋됨 — `getRecruitById`가 ISR 캐시(`unstable_cache`)라 토글 직후 `updateTag`를 안 불러서 캐시된 개수가 안 바뀌고 있었음. `applyToRecruit`과 동일하게 `updateTag(recruit-${id})` 추가해서 해결. 커뮤니티 좋아요는 상세가 SSR이라 애초에 이 문제 없었음.
+  - E2E(`like-bookmark-viewcount.spec.ts`) 추가 — 자기 계정으로 모집·글을 직접 만들어 저장/좋아요/조회수를 검증하는 자기완결형 테스트. 전체 18 passed / 1 skipped 재확인.
+  - 배포 전 Prisma client를 재생성했는데 이미 떠있던 dev 서버가 예전 클라이언트를 메모리에 물고 있어서 "Unknown field bookmarks" 에러가 났던 것도 확인 — dev 서버 재시작으로 해결(스키마 변경 후엔 재시작 필요하다는 걸 기억해둘 것).
 - 사용자가 직접 둘러보며 찾은 버그 3개 수정:
   1. **완성도 게이지 시각 버그** — `CompletenessGauge`의 `[&>div]:bg-[#FFA940]`가 실제 인디케이터(폭 %)가 아니라 Progress의 트랙(직계 자식 div)을 amber로 칠해버려서, 값이 몇 %든 막대가 항상 꽉 찬 것처럼 보였음. 불필요한 오버라이드라 제거(기본 `bg-primary`가 이미 amber라 그대로 정상 동작).
   2. **마이페이지(구 대시보드) "지원한 모집"이 갱신 안 되는 문제** — `applyToRecruit`/`createRecruit`/`createPost`가 `/dashboard` 경로를 `revalidatePath` 안 해서, 지원·모집등록·글쓰기 후 클라이언트 라우터 캐시가 남아있던 `/dashboard`를 스킵하고 보여줌(하드 리로드하면 정상). 세 액션 모두에 `revalidatePath("/dashboard")` 추가.
