@@ -20,11 +20,21 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] Prisma 6으로 고정 + 마이그레이션 (`migrate dev`) + `server/db.ts`
 - [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능)
 - [x] 랜딩 이관 (_design-mockups/landing.html → components/landing)
-- [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등) ← **지금 여기**
-- [ ] 인증 (features/auth)
-- [ ] 커뮤니티 (features/community)
-- [ ] 모집 ★핵심 (features/recruit)
-- [ ] 대시보드 + 반응형 + 배포
+- [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
+- [x] 인증 (features/auth) — 이메일 회원가입·로그인 동작 확인 완료(Supabase "Confirm email" OFF + 진짜 이메일). 폼·actions·schema·`/login`·`/signup`·`/auth/callback` 완성. 🔜 **소셜 로그인(구글/카카오 OAuth)은 나중에 추가** — `social-buttons.tsx`·`socialLogin` 액션·콜백 라우트는 이미 있으나 Supabase Provider 설정+실테스트 미완. MVP 흐름 먼저 밀고 후순위로.
+- [x] 커뮤니티 (features/community) — 목록(`/community`, 말머리 필터+페이지네이션)·상세(`/community/[id]`, 댓글+승격배너)·작성(`/community/new`) 완성. `queries.ts`/`actions.ts`/`schema.ts`/`CommentList`/`PromoteBanner`/`CommunityForm`/`CommunityTagFilter` 신규.
+- [x] 모집 ★핵심 (features/recruit) — 상세(`/recruit/[id]`, ISR: `unstable_cache` + `updateTag`)·작성(`/recruit/new`, 기획자 3종 장치)·지원자 관리(`/recruit/[id]/applicants`, 수락/거절) 완성. `completeness.ts`·`RecruitForm`·`PlannerGuideCard`·`StructuredForm`·`RoleInput`·`ApplyBar`·`ApplicantRow` 신규. `applyToRecruit`(중복 지원 방지)·`updateApplicationStatus` 액션 포함.
+- [x] 마이페이지(`/dashboard`, 동적, 라벨은 "마이페이지"·경로는 유지) — 프로필 요약 + 탭(내 모집/내 글/지원한 모집), 빈 상태 포함. "내 모집" 카드마다 지원자 보기 링크
+- [x] Playwright E2E (`e2e/`) — 인증·모집작성·모집목록·지원·지원자관리·커뮤니티·마이페이지·상태(404/폼검증) 8스펙, `npm run e2e`. 17 passed / 1 skipped / 0 failed
+- [ ] 반응형 + 배포 ← **지금 여기**
+
+> 상세 리포트: `docs/report/screens-report-2026-08-18.md` (만든 화면·컴포넌트·핵심 로직·미완 과제), `docs/report/e2e-report-2026-08-18.md` (E2E 결과 + P2/P3 발견사항)
+
+## 🔜 나중에 추가 (지금은 보류 — MVP 흐름 먼저)
+
+> 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
+
+- **소셜 로그인 (구글/카카오 OAuth)** — 코드(`social-buttons.tsx`, `socialLogin` 액션, `/auth/callback`)는 있음. Supabase Provider 설정 + 실테스트만 나중에. 지금은 이메일 로그인으로 충분.
 
 ---
 
@@ -194,3 +204,4 @@ AI 에이전트(Claude Code, 단일 에이전트 등)가 커밋 메시지를 추
 - `DESIGN.md` — 디자인 시스템
 - `component_breakdown` — 컴포넌트 분리
 - `states_and_validation` — 빈/로딩/에러 + 폼 검증
+- `DEVLOG.md` — 데일리 작업 로그 (그날 한 일·막힌 것·다음 할 일. 작업 끝낼 때 맨 위에 추가)

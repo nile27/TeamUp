@@ -47,6 +47,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* 랜딩 전용 브랜드 팔레트 (components/landing/*에서 bg-brand-*, text-brand-* 등으로 사용) */
+  --color-brand-amber: var(--brand-amber);
+  --color-brand-amber-deep: var(--brand-amber-deep);
+  --color-brand-amber-soft: var(--brand-amber-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-ink-soft: var(--brand-ink-soft);
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-mint: var(--brand-mint);
+  --color-brand-line: var(--brand-line);
 }
 
 body {
@@ -90,6 +100,16 @@ body {
   --sidebar-accent-foreground: #2b2620;
   --sidebar-border: #ece8e2;
   --sidebar-ring: #ffa940;
+
+  /* 랜딩 브랜드 팔레트 (DESIGN.md) — 위 shadcn 테마 변수와 값은 같지만 랜딩 전용 클래스명(brand-*)으로 노출 */
+  --brand-amber: #ffa940;
+  --brand-amber-deep: #f08c00;
+  --brand-amber-soft: #fff4e3;
+  --brand-ink: #2b2620;
+  --brand-ink-soft: #6b6257;
+  --brand-sky: #eaf4fb;
+  --brand-mint: #eaf6ef;
+  --brand-line: #ece8e2;
 }
 
 .dark {

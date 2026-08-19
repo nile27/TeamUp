@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export function ProblemSection() {
   return (
-    <section className="bg-brand-amber-soft py-[72px] md:py-[120px]">
+    <section id="about" className="bg-brand-amber-soft py-[72px] md:py-[120px] scroll-mt-16">
       <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-9 md:gap-6 items-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

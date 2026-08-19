@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RecruitCard } from "@/features/recruit/components/recruit-card";
 import { getRecruitList } from "@/features/recruit/queries";
 import { TechStackUrlFilter } from "@/features/recruit/components/tech-stack-url-filter";
+import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
 // Data fetching component
 async function RecruitList({ stackParam }: { stackParam?: string }) {
@@ -32,7 +33,7 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
           id: recruit.id,
           title: recruit.title,
           summary: recruit.content,
-          type: recruit.type === "DEV" ? "개발자 모집" : "기획자 모집",
+          type: RECRUIT_TYPE_LABEL[recruit.type],
           techStack: recruit.techStack,
           completeness: recruit.completeness,
           roles: recruit.roles.map(r => ({ name: r.name, current: 0, total: r.count })),

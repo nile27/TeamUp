@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function PlannerSection() {
@@ -42,9 +43,12 @@ export function PlannerSection() {
           <p className="text-[16px] text-brand-ink-soft mb-3 leading-[1.6]">
             체계적인 가이드와 템플릿을 통해 전문적인 기획 문서 작성법을 배우고, 팀원들과 원활하게 소통하는 방법을 체득하세요.
           </p>
-          <button className="mt-5 inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-transparent text-brand-ink border-[1.5px] border-brand-ink hover:bg-brand-ink hover:text-white transition-colors">
+          <Link
+            href="/recruit/new"
+            className="mt-5 inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-transparent text-brand-ink border-[1.5px] border-brand-ink hover:bg-brand-ink hover:text-white transition-colors"
+          >
             기획자 가이드 보기
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

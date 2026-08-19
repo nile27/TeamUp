@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function HeroSection() {
@@ -22,12 +23,18 @@ export function HeroSection() {
             아이디어만 있어도 괜찮습니다. 함께 팀을 이뤄 프로젝트를 현실로 만드세요.
           </p>
           <div className="flex justify-center md:justify-start gap-3">
-            <button className="inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors"
+            >
               시작하기
-            </button>
-            <button className="inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-transparent text-brand-ink border-[1.5px] border-brand-ink hover:bg-brand-ink hover:text-white transition-colors">
+            </Link>
+            <Link
+              href="/recruit"
+              className="inline-flex items-center gap-2 text-[16px] font-semibold rounded-lg px-6 py-[13px] bg-transparent text-brand-ink border-[1.5px] border-brand-ink hover:bg-brand-ink hover:text-white transition-colors"
+            >
               둘러보기
-            </button>
+            </Link>
           </div>
         </motion.div>
         
