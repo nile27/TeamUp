@@ -3,11 +3,7 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { useCallback } from "react";
-
-const PREDEFINED_STACKS = [
-  "React", "Next.js", "TypeScript", "Node.js", 
-  "Python", "Spring", "Figma", "UI/UX", "Java"
-];
+import { TECH_STACK_OPTIONS } from "@/config/tech-stack";
 
 export function TechStackUrlFilter() {
   const router = useRouter();
@@ -33,7 +29,7 @@ export function TechStackUrlFilter() {
 
   return (
     <div data-testid="tech-stack-filter" className="flex flex-wrap gap-2 mb-6">
-      {PREDEFINED_STACKS.map(stack => {
+      {TECH_STACK_OPTIONS.map(stack => {
         const isActive = currentStacks.includes(stack);
         return (
           <Badge

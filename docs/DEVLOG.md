@@ -11,6 +11,7 @@
 ## 2026-08-19 (수)
 
 **한 일**
+- **기술스택 프리셋 전환** (`feat/tech-stack-preset` 브랜치). 자유 텍스트 입력(`TechStackInput`, Enter로 태그 추가)이 "React"/"React.js"/"ReactJS"처럼 같은 기술이 다른 태그로 쪼개지는 문제가 있어서, 고정 프리셋(`config/tech-stack.ts`, 5개 카테고리 26개 항목)에서만 클릭으로 고르도록 전환. `TechStackUrlFilter`(모집 목록 필터)도 같은 프리셋을 공유해서 목록에 있던 별도의 9개짜리 목록과 통일. 서버 스키마(`createRecruitSchema`)에도 프리셋 밖 값 거부하는 `refine` 검증 추가(클라이언트 우회 방지). 모집 유형 워딩 논의하다가 나온 "역할 기반 필터(프론트/백엔드/디자이너/기획자)"로 바꾸는 안은 `RecruitRole.name`도 자유 텍스트라 같은 표준화 문제가 있어서 보류, 이번엔 기술스택만 먼저 처리.
 - **좋아요/저장/조회수 기능 구현** (MVP 배포 후 첫 후속 기능, `feat/like-bookmark-viewcount` 브랜치에서 작업). Phase 2로 미뤄뒀던 것 중 사용자가 우선순위로 선택.
   - 스키마: `RecruitBookmark`(모집 저장), `CommunityPostLike`(글 좋아요) 조인 테이블 신설 + `Recruit.viewCount` 필드 추가(`CommunityPost.viewCount`는 이미 있었는데 미사용 상태였음). 마이그레이션 적용.
   - `toggleRecruitBookmark`/`toggleCommunityPostLike` — 버튼 클릭으로 바로 호출하는 토글 액션(폼이 아니라 `useTransition` + 직접 호출 패턴, `social-buttons.tsx`와 동일 스타일). `incrementRecruitViewCount`/`incrementPostViewCount` — 상세 페이지 진입 시 호출.

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TECH_STACK_OPTIONS } from "@/config/tech-stack";
 
 export const recruitRoleSchema = z.object({
   name: z.string().min(1, "역할명을 입력해주세요."),
@@ -12,7 +13,10 @@ export const createRecruitSchema = z.object({
     .min(5, "제목을 입력해주세요.")
     .max(60, "제목은 60자 이하로 입력해주세요."),
   content: z.string().min(10, "설명을 조금 더 작성해주세요."),
-  techStack: z.array(z.string()),
+  techStack: z.array(z.string()).refine(
+    (stacks) => stacks.every((s) => TECH_STACK_OPTIONS.includes(s)),
+    { message: "기술 스택은 제공된 목록에서만 선택할 수 있어요." }
+  ),
   roles: z.array(recruitRoleSchema).min(1, "최소 1개의 역할이 필요해요."),
 
   // 구조화 기획 폼 (선택) — 채운 정도로 완성도 계산

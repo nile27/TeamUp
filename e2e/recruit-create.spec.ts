@@ -10,9 +10,8 @@ test("모집글 작성 — 구조화 폼 채울수록 완성도 게이지 상승
   await page.getByLabel("소개").fill("완성도 게이지가 구조화 폼 입력에 따라 올라가는지 확인하는 E2E 테스트입니다.");
   await page.getByPlaceholder("역할명 (예: 프론트엔드)").first().fill("기획");
 
-  await page.getByPlaceholder("엔터키로 기술 스택 추가 (선택)").fill("Figma");
-  await page.getByPlaceholder("엔터키로 기술 스택 추가 (선택)").press("Enter");
-  await expect(page.getByText("Figma")).toBeVisible();
+  // 기술스택은 자유 텍스트가 아니라 프리셋에서 클릭으로 선택
+  await page.getByText("Figma", { exact: true }).click();
 
   await page.getByLabel("어떤 문제를 겪었나요?").fill("사이드프로젝트 팀원을 구하기 어려웠어요.");
   await expect(page.getByText("25%", { exact: true })).toBeVisible();
