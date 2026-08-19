@@ -1,69 +1,46 @@
 "use client";
 
-import { useState, KeyboardEvent } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { TECH_STACK_CATEGORIES } from "@/config/tech-stack";
 
 interface TechStackInputProps {
   value: string[];
   onChange: (value: string[]) => void;
-  placeholder?: string;
 }
 
-export function TechStackInput({ 
-  value, 
-  onChange, 
-  placeholder = "엔터키로 기술 스택 추가 (선택)" 
-}: TechStackInputProps) {
-  const [inputValue, setInputValue] = useState("");
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const newTag = inputValue.trim();
-      if (newTag && !value.includes(newTag)) {
-        onChange([...value, newTag]);
-        setInputValue("");
-      }
+// 자유 텍스트 대신 고정 프리셋에서만 고르게 해서 "React"/"React.js"/"ReactJS"처럼
+// 같은 기술이 다른 태그로 쪼개지는 걸 원천 차단.
+export function TechStackInput({ value, onChange }: TechStackInputProps) {
+  const toggle = (stack: string) => {
+    if (value.includes(stack)) {
+      onChange(value.filter((v) => v !== stack));
+    } else {
+      onChange([...value, stack]);
     }
   };
 
-  const removeTag = (tagToRemove: string) => {
-    onChange(value.filter((tag) => tag !== tagToRemove));
-  };
-
   return (
-    <div className="space-y-3 w-full">
-      <Input
-        type="text"
-        placeholder={placeholder}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-      />
-      
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {value.map((tag) => (
-            <Badge 
-              key={tag} 
-              variant="secondary" 
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 pl-2.5 pr-1.5 py-1 text-sm flex items-center gap-1"
-            >
-              {tag}
-              <button 
-                type="button" 
-                onClick={() => removeTag(tag)}
-                className="hover:bg-black/10 rounded-full p-0.5 transition-colors"
-                aria-label={`${tag} 삭제`}
+    <div className="space-y-3">
+      {TECH_STACK_CATEGORIES.map((category) => (
+        <div key={category.label} className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground w-20 shrink-0">
+            {category.label}
+          </span>
+          {category.items.map((stack) => {
+            const selected = value.includes(stack);
+            return (
+              <Badge
+                key={stack}
+                onClick={() => toggle(stack)}
+                variant={selected ? "default" : "outline"}
+                className="cursor-pointer px-2.5 py-1 text-xs"
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </Badge>
-          ))}
+                {stack}
+              </Badge>
+            );
+          })}
         </div>
-      )}
+      ))}
     </div>
   );
 }
