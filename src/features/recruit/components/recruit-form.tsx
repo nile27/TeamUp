@@ -18,6 +18,7 @@ import { StructuredForm } from "./structured-form";
 import { RoleInput } from "./role-input";
 import { TechStackInput } from "./tech-stack-input";
 import { CompletenessGauge } from "./completeness-gauge";
+import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
 export function RecruitForm() {
   const [state, formAction, isPending] = useActionState(createRecruit, null);
@@ -108,7 +109,7 @@ export function RecruitForm() {
                   variant={field.value === type ? "default" : "outline"}
                   className="cursor-pointer px-4 py-1.5 text-sm"
                 >
-                  {type === "DEV" ? "개발자 모집" : "기획자 모집"}
+                  {RECRUIT_TYPE_LABEL[type]}
                 </Badge>
               ))}
             </div>

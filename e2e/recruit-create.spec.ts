@@ -33,7 +33,7 @@ test("모집글 작성 — 구조화 폼 채울수록 완성도 게이지 상승
     timeout: 20_000,
   });
   await expect(page.getByRole("heading", { name: "[E2E] 완성도 게이지 검증용 모집글" })).toBeVisible();
-  await expect(page.getByText("기획자 모집")).toBeVisible();
+  await expect(page.getByText("기획자 구해요")).toBeVisible();
   await expect(page.getByText("Figma")).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
 });

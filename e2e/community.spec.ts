@@ -27,7 +27,7 @@ test.describe("커뮤니티", () => {
 
     await expect(page).toHaveURL(/\/recruit\/[^/]+$/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
-    await expect(page.getByText("개발자 모집")).toBeVisible();
+    await expect(page.getByText("개발자 구해요")).toBeVisible();
     await expect(page.getByText("팀원")).toBeVisible();
   });
 
