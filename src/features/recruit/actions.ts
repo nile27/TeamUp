@@ -159,3 +159,53 @@ export async function updateApplicationStatus(formData: FormData): Promise<void>
   revalidatePath("/dashboard");
   redirect(`/recruit/${application.recruitId}/applicants`);
 }
+
+// 상세 페이지 진입 시 호출 — ISR 캐시(getRecruitById)와 분리된 별도 mutation이라
+// 매 조회마다 캐시를 무효화하지 않고도 조회수를 늘릴 수 있음. 최신 값을 바로 반환해서
+// 페이지에서 캐시된 값 대신 이걸로 표시.
+export async function incrementRecruitViewCount(recruitId: string): Promise<number> {
+  try {
+    const recruit = await prisma.recruit.update({
+      where: { id: recruitId },
+      data: { viewCount: { increment: 1 } },
+      select: { viewCount: true },
+    });
+    return recruit.viewCount;
+  } catch {
+    return 0;
+  }
+}
+
+// 저장(북마크) 토글. 폼이 아니라 버튼 클릭으로 바로 호출하는 형태라
+// useActionState 대신 결과를 직접 반환.
+export async function toggleRecruitBookmark(
+  recruitId: string
+): Promise<{ bookmarked: boolean; count: number } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "로그인이 필요합니다." };
+  }
+
+  const existing = await prisma.recruitBookmark.findUnique({
+    where: { userId_recruitId: { userId: user.id, recruitId } },
+  });
+
+  if (existing) {
+    await prisma.recruitBookmark.delete({ where: { id: existing.id } });
+  } else {
+    try {
+      await prisma.recruitBookmark.create({ data: { userId: user.id, recruitId } });
+    } catch (error) {
+      console.error("Toggle Bookmark Error:", error);
+      return { error: "저장 처리 중 오류가 발생했습니다." };
+    }
+  }
+
+  const count = await prisma.recruitBookmark.count({ where: { recruitId } });
+  // getRecruitById는 ISR 캐시라 저장 개수(_count.bookmarks)가 다음 새로고침에도
+  // 그대로 반영되려면 태그를 무효화해야 함 (지원 처리와 동일한 패턴).
+  updateTag(`recruit-${recruitId}`);
+  revalidatePath("/dashboard");
+  return { bookmarked: !existing, count };
+}

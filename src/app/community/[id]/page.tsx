@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AppShell } from "@/components/layout/app-shell";
 import { Separator } from "@/components/ui/separator";
-import { getCommunityPostById } from "@/features/community/queries";
+import { getCommunityPostById, getLikeForUser } from "@/features/community/queries";
+import { incrementPostViewCount } from "@/features/community/actions";
 import { PromoteBanner } from "@/features/community/components/promote-banner";
 import { CommentList } from "@/features/community/components/comment-list";
+import { LikeButton } from "@/features/community/components/like-button";
 import { createClient } from "@/server/supabase";
 import { COMMUNITY_TAG_LABEL } from "@/config/labels";
 
@@ -27,15 +30,32 @@ export default async function CommunityDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   const isAuthor = user?.id === post.authorId;
 
+  const [like, viewCount] = await Promise.all([
+    user ? getLikeForUser(post.id, user.id) : Promise.resolve(null),
+    incrementPostViewCount(post.id),
+  ]);
+
   return (
     <AppShell>
       <div className="container mx-auto max-w-2xl px-4 py-8">
-        <div className="space-y-2 mb-6">
-          <Badge variant="outline">{COMMUNITY_TAG_LABEL[post.tag]}</Badge>
-          <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
-          </p>
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <Badge variant="outline">{COMMUNITY_TAG_LABEL[post.tag]}</Badge>
+            <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
+              <span data-testid="post-view-count" className="inline-flex items-center gap-1 ml-1">
+                <Eye className="h-3.5 w-3.5" />
+                {viewCount}
+              </span>
+            </p>
+          </div>
+          <LikeButton
+            postId={post.id}
+            isLoggedIn={!!user}
+            initialLiked={!!like}
+            initialCount={post._count.likes}
+          />
         </div>
 
         {typeof promoteError === "string" && (

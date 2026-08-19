@@ -32,7 +32,7 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /(auth|recruit-list|recruit-applicant-management)\.spec\.ts/,
+      testMatch: /(auth|recruit-list|recruit-applicant-management|like-bookmark-viewcount)\.spec\.ts/,
     },
   ],
 });

@@ -26,7 +26,11 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] 모집 ★핵심 (features/recruit) — 상세(`/recruit/[id]`, ISR: `unstable_cache` + `updateTag`)·작성(`/recruit/new`, 기획자 3종 장치)·지원자 관리(`/recruit/[id]/applicants`, 수락/거절) 완성. `completeness.ts`·`RecruitForm`·`PlannerGuideCard`·`StructuredForm`·`RoleInput`·`ApplyBar`·`ApplicantRow` 신규. `applyToRecruit`(중복 지원 방지)·`updateApplicationStatus` 액션 포함.
 - [x] 마이페이지(`/dashboard`, 동적, 라벨은 "마이페이지"·경로는 유지) — 프로필 요약 + 탭(내 모집/내 글/지원한 모집), 빈 상태 포함. "내 모집" 카드마다 지원자 보기 링크
 - [x] Playwright E2E (`e2e/`) — 인증·모집작성·모집목록·지원·지원자관리·커뮤니티·마이페이지·상태(404/폼검증) 8스펙, `npm run e2e`. 17 passed / 1 skipped / 0 failed
-- [ ] 반응형 + 배포 ← **지금 여기**
+- [x] 반응형 점검 + Vercel 배포 — https://team-up-olive.vercel.app 실서비스 접속 가능. PR #2(dev→main) 머지 완료, CI(Lint & Typecheck) green.
+
+**🎉 MVP 성공 기준 5개(PRD.md 7장) 전부 충족 — MVP 사실상 완료.**
+
+- [ ] 후속 과제 (아래 "나중에 추가" 참고) ← **지금 여기**
 
 > 상세 리포트: `docs/report/screens-report-2026-08-18.md` (만든 화면·컴포넌트·핵심 로직·미완 과제), `docs/report/e2e-report-2026-08-18.md` (E2E 결과 + P2/P3 발견사항)
 
@@ -35,6 +39,10 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 > 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
 
 - **소셜 로그인 (구글/카카오 OAuth)** — 코드(`social-buttons.tsx`, `socialLogin` 액션, `/auth/callback`)는 있음. Supabase Provider 설정 + 실테스트만 나중에. 지금은 이메일 로그인으로 충분.
+- **기술스택 입력 방식** — 지금은 자유 텍스트 입력(`TechStackInput`). 프리셋/자동완성 제공할지 논의 필요.
+- **프로필 고도화** — 자기소개 외 포트폴리오·경력을 보여줄 수단(마크다운 에디터 등). 구조화 폼 4문항도 부족하다는 의견 있었음.
+- **좋아요/저장·조회수** — `RecruitCard`에 아이콘은 있는데 실제 기능 없음(원래 PRD상 Phase 2 범위, SCHEMA.md에도 `Like` 모델 주석 처리돼 있음).
+- E2E를 CI에서 정기적으로 돌릴 계획이면 `SUPABASE_SERVICE_ROLE_KEY` 추가 + Auth 고아 계정 자동 정리(`global.teardown.ts`) 검토.
 
 ---
 
@@ -205,3 +213,13 @@ AI 에이전트(Claude Code, Antigravity 등)가 커밋 메시지를 추천할 �
 - `component_breakdown` — 컴포넌트 분리
 - `states_and_validation` — 빈/로딩/에러 + 폼 검증
 - `DEVLOG.md` — 데일리 작업 로그 (그날 한 일·막힌 것·다음 할 일. 작업 끝낼 때 맨 위에 추가)
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
