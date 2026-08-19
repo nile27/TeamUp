@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useState, useTransition } from "react"
+import { useActionState, useEffect, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { loginSchema, type LoginInput } from "../schema"
@@ -14,7 +14,6 @@ import { useSearchParams } from "next/navigation"
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, null)
   const [isTransitioning, startTransition] = useTransition()
-  const [signupSuccess, setSignupSuccess] = useState(false)
 
   const {
     register,
@@ -38,22 +37,22 @@ export function LoginForm() {
     
     if (state?.fieldErrors) {
       Object.entries(state.fieldErrors).forEach(([key, message]) => {
-        setError(key as any, { type: "server", message })
+        setError(key as keyof LoginInput, { type: "server", message })
       })
     }
   }, [state, setError])
 
   const searchParams = useSearchParams()
-  useEffect(() => {
-    if (searchParams.get("signup") === "success") {
-      setSignupSuccess(true)
+  const signupSuccess = searchParams.get("signup") === "success"
 
+  useEffect(() => {
+    if (signupSuccess) {
       // Remove the parameter from the URL so it doesn't show again on refresh
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete("signup")
       window.history.replaceState({}, "", newUrl)
     }
-  }, [searchParams])
+  }, [signupSuccess])
 
   const onSubmit = (data: LoginInput) => {
     const formData = new FormData()

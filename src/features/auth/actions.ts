@@ -48,7 +48,7 @@ export async function login(prevState: AuthActionState, formData: FormData): Pro
   }
 
   revalidatePath("/", "layout")
-  return { success: true } as any
+  return { success: true }
 }
 
 export async function signup(prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {

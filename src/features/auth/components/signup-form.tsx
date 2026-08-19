@@ -33,7 +33,7 @@ export function SignupForm() {
   useEffect(() => {
     if (state?.fieldErrors) {
       Object.entries(state.fieldErrors).forEach(([key, message]) => {
-        setError(key as any, { type: "server", message })
+        setError(key as keyof SignupInput, { type: "server", message })
       })
     }
   }, [state, setError])
