@@ -21,7 +21,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 - [x] shadcn 테마 주입 (DESIGN.md 색) + Pretendard — `globals.css :root`에 앰버/먹색 주입, `--font-sans` Pretendard 우선. 확인용 `/theme-test` 페이지 존재(삭제 가능)
 - [x] 랜딩 이관 (_design-mockups/landing.html → components/landing)
 - [x] 공통 컴포넌트 (AppNav, RecruitCard, TagFilter 등)
-- [x] 인증 (features/auth) — 이메일 회원가입·로그인 동작 확인 완료(Supabase "Confirm email" OFF + 진짜 이메일). 폼·actions·schema·`/login`·`/signup`·`/auth/callback` 완성. 🔜 **소셜 로그인(구글/카카오 OAuth)은 나중에 추가** — `social-buttons.tsx`·`socialLogin` 액션·콜백 라우트는 이미 있으나 Supabase Provider 설정+실테스트 미완. MVP 흐름 먼저 밀고 후순위로.
+- [x] 인증 (features/auth) — 이메일 회원가입·로그인 + **구글/카카오 소셜 로그인 모두 실연동 완료**(Provider 설정 + 실계정 테스트, 세 방식 다 같은 계정에 identity linking 확인됨). 폼·actions·schema·`/login`·`/signup`·`/auth/callback` 완성.
 - [x] 커뮤니티 (features/community) — 목록(`/community`, 말머리 필터+페이지네이션)·상세(`/community/[id]`, 댓글+승격배너)·작성(`/community/new`) 완성. `queries.ts`/`actions.ts`/`schema.ts`/`CommentList`/`PromoteBanner`/`CommunityForm`/`CommunityTagFilter` 신규.
 - [x] 모집 ★핵심 (features/recruit) — 상세(`/recruit/[id]`, ISR: `unstable_cache` + `updateTag`)·작성(`/recruit/new`, 기획자 3종 장치)·지원자 관리(`/recruit/[id]/applicants`, 수락/거절) 완성. `completeness.ts`·`RecruitForm`·`PlannerGuideCard`·`StructuredForm`·`RoleInput`·`ApplyBar`·`ApplicantRow` 신규. `applyToRecruit`(중복 지원 방지)·`updateApplicationStatus` 액션 포함.
 - [x] 마이페이지(`/dashboard`, 동적, 라벨은 "마이페이지"·경로는 유지) — 프로필 요약 + 탭(내 모집/내 글/지원한 모집), 빈 상태 포함. "내 모집" 카드마다 지원자 보기 링크
@@ -38,10 +38,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 > 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
 
-- **소셜 로그인 (구글/카카오 OAuth)** — 코드(`social-buttons.tsx`, `socialLogin` 액션, `/auth/callback`)는 있음. Supabase Provider 설정 + 실테스트만 나중에. 지금은 이메일 로그인으로 충분.
-- **기술스택 입력 방식** — 지금은 자유 텍스트 입력(`TechStackInput`). 프리셋/자동완성 제공할지 논의 필요.
 - **프로필 고도화** — 자기소개 외 포트폴리오·경력을 보여줄 수단(마크다운 에디터 등). 구조화 폼 4문항도 부족하다는 의견 있었음.
-- **좋아요/저장·조회수** — `RecruitCard`에 아이콘은 있는데 실제 기능 없음(원래 PRD상 Phase 2 범위, SCHEMA.md에도 `Like` 모델 주석 처리돼 있음).
 - E2E를 CI에서 정기적으로 돌릴 계획이면 `SUPABASE_SERVICE_ROLE_KEY` 추가 + Auth 고아 계정 자동 정리(`global.teardown.ts`) 검토.
 
 ---
