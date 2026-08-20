@@ -30,7 +30,8 @@ model User {
   id        String  @id @db.Uuid // Supabase auth user id와 동일
   email     String  @unique
   nickname  String
-  bio       String?
+  bio       String? // 한 줄 자기소개
+  portfolio String? @db.Text // 포트폴리오·경력 (마크다운)
   avatarUrl String?
 
   communityPosts     CommunityPost[]

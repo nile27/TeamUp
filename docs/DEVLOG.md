@@ -11,7 +11,15 @@
 ## 2026-08-20 (목)
 
 **한 일**
+- **프로필 고도화** (`feat/profile-portfolio` 브랜치). "자기소개 외 포트폴리오 보여줄 수단 필요"라던 후속 백로그 처리.
+  - `User.portfolio`(마크다운 텍스트) 필드 추가, 마이그레이션 적용.
+  - `react-markdown` + `remark-gfm` 도입 — `MarkdownContent`(공용 렌더 컴포넌트, `dangerouslySetInnerHTML` 없이 React 엘리먼트로 렌더링해 XSS 안전)와 `MarkdownEditor`(작성/미리보기 탭 토글) 신규.
+  - `/dashboard/edit` 프로필 수정 페이지 신설(닉네임/자기소개/포트폴리오), `updateProfile` 액션. 마이페이지에 "프로필 수정" 버튼 + 포트폴리오 미리보기 추가.
+  - 지원자 관리 화면(`ApplicantRow`)에도 지원자 포트폴리오를 `<details>` 토글로 표시 — 원래 피드백이 "지원자 검토할 때 포트폴리오 볼 수 있으면 좋겠다"는 맥락이었어서.
+  - 초안에서 버그 2개 자체 발견·수정: (1) `MarkdownEditor`를 처음엔 uncontrolled(`name` 속성)로 짰다가, 부모 폼이 react-hook-form이라 `register` 안 된 필드는 제출 데이터에 안 잡힌다는 걸 뒤늦게 깨닫고 `Controller` 기반 controlled 컴포넌트로 다시 씀(`RecruitForm`의 `TechStackInput` 패턴과 동일하게). (2) `<Label htmlFor="portfolio">`인데 정작 `MarkdownEditor` 내부 textarea에 `id`가 없어서 `getByLabel`이 못 찾던 것 — `id` prop 추가.
+  - 실제 계정 2개(작성자+지원자)로 프로필 작성 → 저장 → 마이페이지 반영 → 지원자 관리 화면에서 포트폴리오 노출까지 전체 플로우 수동 확인 + E2E(`profile-edit.spec.ts`) 추가. 전체 19 passed / 1 skipped.
 - `/devlog` 커스텀 슬래시 명령 신설 (`.claude/commands/devlog.md`). 매번 말로 안 시켜도 그날 커밋/변경 파일을 훑어서 `DEVLOG.md` 최신 항목 위에 자동으로 정리해 넣는 명령. 만드는 과정에서 템플릿 블록이 파일 최상단이 아니라 8/19와 8/18 항목 사이에 끼어있다는 걸 발견 — 삽입 기준을 템플릿 위치가 아니라 "파일에서 첫 번째로 나오는 `## YYYY-MM-DD` 줄"로 고쳐서 반영.
+- **역할 기반 필터 보류 결정** — 어제 논의됐던 "/recruit 목록 필터를 기술스택이 아니라 프론트/백엔드/디자이너/기획자 역할 기준으로 바꾸는 안"을 사용자가 최종 보류하기로 함. 지금 자유 텍스트인 `RecruitRole.name` 표준화까지 손대는 것치곤 실익이 크지 않고 "작성자 재량"으로 두는 게 낫다는 판단. 당분간 진행 안 함.
 - **카카오 소셜 로그인 실연동 완료** — 어제 중단됐던 것 이어서 진행. 카카오 디벨로퍼스 최신 UI 기준 메뉴 경로 확인(블로그 글 참고: `[앱] > 플랫폼 키 > REST API 키`가 어제 못 찾던 "플랫폼" 메뉴의 새 이름이었음) + Supabase Provider 설정 + 실계정 테스트. 코드 변경은 없었음(구글 때 이미 공용 경로로 대비해둔 `socialLogin`/`/auth/callback` 그대로 재사용). DB에서 `auth.identities` 직접 조회해 같은 계정에 email/google/kakao 세 identity가 전부 연결된 것 확인 — 이제 이 계정 하나로 세 가지 로그인 방식 다 됨.
 
 ---

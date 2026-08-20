@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
   reporter: "html",
+  globalTeardown: "./e2e/global.teardown.ts",
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
@@ -32,7 +33,7 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /(auth|recruit-list|recruit-applicant-management|like-bookmark-viewcount)\.spec\.ts/,
+      testMatch: /(auth|recruit-list|recruit-applicant-management|like-bookmark-viewcount|profile-edit)\.spec\.ts/,
     },
   ],
 });

@@ -30,6 +30,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 **🎉 MVP 성공 기준 5개(PRD.md 7장) 전부 충족 — MVP 사실상 완료.**
 
+- [x] E2E CI 자동화 — `.github/workflows/e2e.yml`(매일 스케줄 + 수동 실행) + `e2e/global.teardown.ts`(service_role 키로 Auth 고아 계정 정리, 키 없으면 안전하게 스킵). **GitHub repo Settings → Secrets에 `DATABASE_URL`/`DIRECT_URL`/`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SERVICE_ROLE_KEY` 등록 필요 (사용자가 직접) — 등록 전까진 워크플로가 실패함.**
 - [ ] 후속 과제 (아래 "나중에 추가" 참고) ← **지금 여기**
 
 > 상세 리포트: `docs/report/screens-report-2026-08-18.md` (만든 화면·컴포넌트·핵심 로직·미완 과제), `docs/report/e2e-report-2026-08-18.md` (E2E 결과 + P2/P3 발견사항)
@@ -38,8 +39,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 > 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
 
-- **프로필 고도화** — 자기소개 외 포트폴리오·경력을 보여줄 수단(마크다운 에디터 등). 구조화 폼 4문항도 부족하다는 의견 있었음.
-- E2E를 CI에서 정기적으로 돌릴 계획이면 `SUPABASE_SERVICE_ROLE_KEY` 추가 + Auth 고아 계정 자동 정리(`global.teardown.ts`) 검토.
+(현재 없음)
 
 ---
 
