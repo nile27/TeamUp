@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { MarkdownContent } from "@/components/common/markdown-content";
 import { RecruitCard } from "@/features/recruit/components/recruit-card";
 import { PostListItem } from "@/features/community/components/post-list-item";
 import { ApplicationItem } from "@/features/dashboard/components/application-item";
@@ -28,14 +29,33 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <div className="flex items-center gap-4 mb-8">
-          <Avatar size="lg">
-            <AvatarFallback>{profile?.nickname?.[0] ?? "U"}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">{profile?.nickname ?? "사용자"}</h1>
-            <p className="text-sm text-muted-foreground">{profile?.email}</p>
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Avatar size="lg">
+              <AvatarFallback>{profile?.nickname?.[0] ?? "U"}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">{profile?.nickname ?? "사용자"}</h1>
+              <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              {profile?.bio && <p className="text-sm text-foreground mt-1">{profile.bio}</p>}
+            </div>
           </div>
+          <Button render={<Link href="/dashboard/edit" />} nativeButton={false} variant="outline" size="sm">
+            프로필 수정
+          </Button>
+        </div>
+
+        <div className="mb-8 rounded-xl border bg-white p-5">
+          <h2 className="text-sm font-semibold text-foreground mb-3">포트폴리오 · 경력</h2>
+          {profile?.portfolio ? (
+            <MarkdownContent content={profile.portfolio} />
+          ) : (
+            <EmptyState
+              message="아직 포트폴리오를 작성하지 않았어요. 프로젝트 경험이나 경력을 채워보세요."
+              actionLabel="프로필 입력하기"
+              actionHref="/dashboard/edit"
+            />
+          )}
         </div>
 
         <Tabs defaultValue="recruits" className="w-full">

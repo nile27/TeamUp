@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@/components/ui/badge";
 import { TECH_STACK_CATEGORIES } from "@/config/tech-stack";
 

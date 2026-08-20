@@ -61,7 +61,7 @@ export async function getRecruitForApplicants(id: string) {
       applications: {
         orderBy: { createdAt: "desc" },
         include: {
-          applicant: { select: { id: true, nickname: true, avatarUrl: true, bio: true, email: true } },
+          applicant: { select: { id: true, nickname: true, avatarUrl: true, bio: true, email: true, portfolio: true } },
         },
       },
     },

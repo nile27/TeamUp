@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MarkdownContent } from "@/components/common/markdown-content";
 import { updateApplicationStatus } from "../actions";
 import type { ApplicationStatus } from "@prisma/client";
 
@@ -24,6 +25,7 @@ interface ApplicantRowProps {
     nickname: string;
     bio: string | null;
     email: string;
+    portfolio: string | null;
   };
 }
 
@@ -45,6 +47,17 @@ export function ApplicantRow({ applicationId, status, message, applicant }: Appl
 
       {applicant.bio && (
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.bio}</p>
+      )}
+
+      {applicant.portfolio && (
+        <details className="rounded-md border border-border">
+          <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-foreground">
+            포트폴리오 · 경력 보기
+          </summary>
+          <div className="px-3 pb-3">
+            <MarkdownContent content={applicant.portfolio} />
+          </div>
+        </details>
       )}
 
       {message && (
