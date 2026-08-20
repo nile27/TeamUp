@@ -1,5 +1,3 @@
-"use client";
-
 import type { FieldErrors, UseFieldArrayReturn, UseFormRegister } from "react-hook-form";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
