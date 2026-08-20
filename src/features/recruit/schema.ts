@@ -28,6 +28,10 @@ export const createRecruitSchema = z.object({
 
 export type CreateRecruitInput = z.infer<typeof createRecruitSchema>;
 
+export const updateRecruitSchema = createRecruitSchema;
+
+export type UpdateRecruitInput = z.infer<typeof updateRecruitSchema>;
+
 export const applyToRecruitSchema = z.object({
   message: z.string().max(1000, "지원 메시지는 1000자 이하로 입력해주세요.").optional(),
 });

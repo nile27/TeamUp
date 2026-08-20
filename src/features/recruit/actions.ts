@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { createClient } from "@/server/supabase";
-import { createRecruitSchema, applyToRecruitSchema } from "./schema";
+import { createRecruitSchema, updateRecruitSchema, applyToRecruitSchema } from "./schema";
 import { calcCompleteness } from "./completeness";
 
 export type RecruitActionState = {
@@ -81,6 +81,90 @@ export async function createRecruit(
     return { error: "모집 등록 중 오류가 발생했습니다. 다시 시도해주세요." };
   }
 
+  revalidatePath("/recruit");
+  revalidatePath("/dashboard");
+  redirect(`/recruit/${recruitId}`);
+}
+
+export async function updateRecruit(
+  prevState: RecruitActionState,
+  formData: FormData
+): Promise<RecruitActionState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const recruitId = String(formData.get("recruitId") || "");
+  const recruit = await prisma.recruit.findUnique({ where: { id: recruitId } });
+  if (!recruit) {
+    notFound();
+  }
+  if (recruit.authorId !== user.id) {
+    redirect(`/recruit/${recruitId}`);
+  }
+
+  const raw = Object.fromEntries(formData.entries());
+
+  let techStack: unknown = [];
+  let roles: unknown = [];
+  try {
+    techStack = JSON.parse(String(raw.techStack || "[]"));
+    roles = JSON.parse(String(raw.roles || "[]"));
+  } catch {
+    return { error: "입력값이 올바르지 않습니다. 다시 시도해주세요." };
+  }
+
+  const parsed = updateRecruitSchema.safeParse({
+    type: raw.type,
+    title: raw.title,
+    content: raw.content,
+    techStack,
+    roles,
+    problem: raw.problem || undefined,
+    targetUser: raw.targetUser || undefined,
+    coreFeatures: raw.coreFeatures || undefined,
+    reference: raw.reference || undefined,
+  });
+
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    parsed.error.issues.forEach((issue) => {
+      if (issue.path[0] !== undefined) fieldErrors[String(issue.path[0])] = issue.message;
+    });
+    return { error: "입력값을 다시 확인해주세요.", fieldErrors };
+  }
+
+  const completeness = calcCompleteness(parsed.data);
+
+  try {
+    await prisma.$transaction([
+      prisma.recruitRole.deleteMany({ where: { recruitId } }),
+      prisma.recruit.update({
+        where: { id: recruitId },
+        data: {
+          type: parsed.data.type,
+          title: parsed.data.title,
+          content: parsed.data.content,
+          techStack: parsed.data.techStack,
+          problem: parsed.data.problem,
+          targetUser: parsed.data.targetUser,
+          coreFeatures: parsed.data.coreFeatures,
+          reference: parsed.data.reference,
+          completeness,
+          roles: {
+            create: parsed.data.roles.map((role) => ({ name: role.name, count: role.count })),
+          },
+        },
+      }),
+    ]);
+  } catch (error) {
+    console.error("Update Recruit Error:", error);
+    return { error: "모집 수정 중 오류가 발생했습니다. 다시 시도해주세요." };
+  }
+
+  updateTag(`recruit-${recruitId}`);
   revalidatePath("/recruit");
   revalidatePath("/dashboard");
   redirect(`/recruit/${recruitId}`);
