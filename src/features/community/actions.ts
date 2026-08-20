@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { createClient } from "@/server/supabase";
-import { createPostSchema, createCommentSchema } from "./schema";
+import { createPostSchema, updatePostSchema, createCommentSchema } from "./schema";
 
 export type CommunityActionState = {
   error?: string;
@@ -46,6 +46,51 @@ export async function createPost(
 
   revalidatePath("/community");
   revalidatePath("/dashboard");
+  redirect(`/community/${postId}`);
+}
+
+export async function updatePost(
+  prevState: CommunityActionState,
+  formData: FormData
+): Promise<CommunityActionState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const postId = String(formData.get("postId") || "");
+  const post = await prisma.communityPost.findUnique({ where: { id: postId } });
+  if (!post) {
+    notFound();
+  }
+  if (post.authorId !== user.id) {
+    redirect(`/community/${postId}`);
+  }
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = updatePostSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    parsed.error.issues.forEach((issue) => {
+      if (issue.path[0] !== undefined) fieldErrors[String(issue.path[0])] = issue.message;
+    });
+    return { error: "입력값을 다시 확인해주세요.", fieldErrors };
+  }
+
+  try {
+    await prisma.communityPost.update({
+      where: { id: postId },
+      data: parsed.data,
+    });
+  } catch (error) {
+    console.error("Update Post Error:", error);
+    return { error: "글 수정 중 오류가 발생했습니다. 다시 시도해주세요." };
+  }
+
+  revalidatePath("/community");
+  revalidatePath(`/community/${postId}`);
   redirect(`/community/${postId}`);
 }
 

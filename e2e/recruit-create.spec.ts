@@ -36,3 +36,34 @@ test("모집글 작성 — 구조화 폼 채울수록 완성도 게이지 상승
   await expect(page.getByText("Figma")).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
 });
+
+test("모집글 작성 → 수정 → 변경 내용이 상세에 반영된다", async ({ page }) => {
+  const title = `[E2E] 수정 전 모집글 ${Date.now()}`;
+  const editedTitle = `[E2E] 수정 후 모집글 ${Date.now()}`;
+
+  await page.goto("/recruit/new");
+  await page.getByTestId("recruit-type-DEV").click();
+  await page.getByLabel("제목").fill(title);
+  await page.getByLabel("소개").fill("수정 전 소개입니다.");
+  await page.getByPlaceholder("역할명 (예: 프론트엔드)").first().fill("백엔드");
+  await page.getByRole("button", { name: "모집글 등록하기" }).click();
+
+  await page.waitForURL((url) => url.pathname.startsWith("/recruit/") && url.pathname !== "/recruit/new", {
+    timeout: 20_000,
+  });
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+
+  await page.getByRole("button", { name: "수정" }).click();
+  await page.waitForURL(/\/edit$/, { timeout: 15_000 });
+  await expect(page.getByLabel("제목")).toHaveValue(title);
+
+  await page.getByLabel("제목").fill(editedTitle);
+  await page.getByLabel("소개").fill("수정 후 소개입니다.");
+  await page.getByRole("button", { name: "모집글 수정하기" }).click();
+
+  await page.waitForURL((url) => url.pathname.startsWith("/recruit/") && !url.pathname.endsWith("/edit"), {
+    timeout: 20_000,
+  });
+  await expect(page.getByRole("heading", { name: editedTitle })).toBeVisible();
+  await expect(page.getByText("수정 후 소개입니다.")).toBeVisible();
+});

@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Eye } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getRecruitById, getApplicationForUser, getBookmarkForUser } from "@/features/recruit/queries";
@@ -67,12 +69,19 @@ export default async function RecruitDetailPage({
               </span>
             </p>
           </div>
-          <BookmarkButton
-            recruitId={recruit.id}
-            isLoggedIn={!!user}
-            initialBookmarked={!!bookmark}
-            initialCount={recruit._count.bookmarks}
-          />
+          <div className="flex items-center gap-2 shrink-0">
+            {user?.id === recruit.authorId && (
+              <Button render={<Link href={`/recruit/${recruit.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                수정
+              </Button>
+            )}
+            <BookmarkButton
+              recruitId={recruit.id}
+              isLoggedIn={!!user}
+              initialBookmarked={!!bookmark}
+              initialCount={recruit._count.bookmarks}
+            />
+          </div>
         </div>
 
         <TechStackTags tags={recruit.techStack} maxDisplay={recruit.techStack.length} />

@@ -52,6 +52,14 @@ export async function getBookmarkForUser(recruitId: string, userId: string) {
   });
 }
 
+// 수정 폼 프리필용 — ISR 캐시(getRecruitById)를 안 쓰고 매번 최신 값을 직접 조회.
+export async function getRecruitForEdit(id: string) {
+  return prisma.recruit.findUnique({
+    where: { id },
+    include: { roles: true },
+  });
+}
+
 // 모집 작성자용 — 지원자 확인/수락/거절 화면(/recruit/[id]/applicants)에서 사용.
 // 작성자 본인인지는 페이지에서 recruit.authorId로 확인.
 export async function getRecruitForApplicants(id: string) {

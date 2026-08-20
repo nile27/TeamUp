@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { createRecruitSchema, type CreateRecruitInput } from "../schema";
-import { createRecruit } from "../actions";
+import { createRecruit, updateRecruit } from "../actions";
 import { calcCompleteness } from "../completeness";
 import { PlannerGuideCard } from "./planner-guide-card";
 import { StructuredForm } from "./structured-form";
@@ -20,8 +20,13 @@ import { TechStackInput } from "./tech-stack-input";
 import { CompletenessGauge } from "./completeness-gauge";
 import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
-export function RecruitForm() {
-  const [state, formAction, isPending] = useActionState(createRecruit, null);
+interface RecruitFormProps {
+  recruit?: { id: string } & CreateRecruitInput;
+}
+
+export function RecruitForm({ recruit }: RecruitFormProps) {
+  const isEdit = !!recruit;
+  const [state, formAction, isPending] = useActionState(isEdit ? updateRecruit : createRecruit, null);
   const [isTransitioning, startTransition] = useTransition();
 
   const {
@@ -33,7 +38,7 @@ export function RecruitForm() {
     formState: { errors },
   } = useForm<CreateRecruitInput>({
     resolver: zodResolver(createRecruitSchema),
-    defaultValues: {
+    defaultValues: recruit ?? {
       type: "DEV",
       title: "",
       content: "",
@@ -60,6 +65,7 @@ export function RecruitForm() {
 
   const onSubmit = (data: CreateRecruitInput) => {
     const formData = new FormData();
+    if (recruit) formData.append("recruitId", recruit.id);
     formData.append("type", data.type);
     formData.append("title", data.title);
     formData.append("content", data.content);
@@ -155,8 +161,10 @@ export function RecruitForm() {
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            등록 중...
+            {isEdit ? "수정 중..." : "등록 중..."}
           </>
+        ) : isEdit ? (
+          "모집글 수정하기"
         ) : (
           "모집글 등록하기"
         )}

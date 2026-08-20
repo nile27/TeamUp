@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/layout/app-shell";
 import { Separator } from "@/components/ui/separator";
 import { getCommunityPostById, getLikeForUser } from "@/features/community/queries";
@@ -50,12 +52,19 @@ export default async function CommunityDetailPage({
               </span>
             </p>
           </div>
-          <LikeButton
-            postId={post.id}
-            isLoggedIn={!!user}
-            initialLiked={!!like}
-            initialCount={post._count.likes}
-          />
+          <div className="flex items-center gap-2 shrink-0">
+            {isAuthor && (
+              <Button render={<Link href={`/community/${post.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                수정
+              </Button>
+            )}
+            <LikeButton
+              postId={post.id}
+              isLoggedIn={!!user}
+              initialLiked={!!like}
+              initialCount={post._count.likes}
+            />
+          </div>
         </div>
 
         {typeof promoteError === "string" && (

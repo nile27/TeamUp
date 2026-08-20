@@ -8,6 +8,10 @@ export const createPostSchema = z.object({
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 
+export const updatePostSchema = createPostSchema;
+
+export type UpdatePostInput = z.infer<typeof updatePostSchema>;
+
 export const createCommentSchema = z.object({
   content: z.string().min(1, "댓글을 입력해주세요."),
 });
