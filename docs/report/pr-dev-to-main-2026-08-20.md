@@ -1,13 +1,14 @@
-## 개요
+## Summary
+- 역할 기반 필터 보류 결정 기록 (문서만)
+- 프로필 고도화: `User.portfolio`(마크다운) 필드, `/dashboard/edit` 프로필 수정 페이지, 마이페이지 표시 + 빈 상태 안내, 지원자 관리 페이지에서 포트폴리오 확인
+- 불필요한 `"use client"` 지시어 정리 (`role-input.tsx`, `tech-stack-input.tsx`)
+- E2E CI 자동화: `.github/workflows/e2e.yml`(매일 스케줄 + 수동 실행), `e2e/global.teardown.ts`(Auth 고아 계정 자동 정리 — 실계정으로 검증 완료, 87건 정리됨)
 
-문서/설정 반영. 코드 변경 없음(전부 docs, `.claude/commands/`).
+## Test plan
+- [x] `npx tsc --noEmit`
+- [x] `npx eslint`
+- [x] `npm run build`
+- [x] `npx playwright test` 전체 통과 (profile-edit 포함)
+- [x] service_role 키로 teardown 스크립트 실제 실행 → Auth 고아 계정 정리 확인
 
-## 변경사항
-
-- 소셜 로그인(구글+카카오) 실연동 완료 반영 — 진행 상황 체크리스트, DEVLOG
-- `/devlog` 커스텀 슬래시 명령 추가 (`.claude/commands/devlog.md`) — 그날 작업을 DEVLOG.md 최신 항목 위에 자동 정리
-- 데일리 로그 항목들 (카카오 로그인 설정 중단 지점 기록 → 재개 → 완료까지)
-
-## 테스트
-
-- 코드 변경이 없어서 별도 빌드/E2E 불필요. 직전 PR(#8)까지 이미 검증된 상태 그대로.
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
