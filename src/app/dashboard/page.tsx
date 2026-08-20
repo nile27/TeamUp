@@ -45,12 +45,18 @@ export default async function DashboardPage() {
           </Button>
         </div>
 
-        {profile?.portfolio && (
-          <div className="mb-8 rounded-xl border bg-white p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-3">포트폴리오 · 경력</h2>
+        <div className="mb-8 rounded-xl border bg-white p-5">
+          <h2 className="text-sm font-semibold text-foreground mb-3">포트폴리오 · 경력</h2>
+          {profile?.portfolio ? (
             <MarkdownContent content={profile.portfolio} />
-          </div>
-        )}
+          ) : (
+            <EmptyState
+              message="아직 포트폴리오를 작성하지 않았어요. 프로젝트 경험이나 경력을 채워보세요."
+              actionLabel="프로필 입력하기"
+              actionHref="/dashboard/edit"
+            />
+          )}
+        </div>
 
         <Tabs defaultValue="recruits" className="w-full">
           <TabsList>
