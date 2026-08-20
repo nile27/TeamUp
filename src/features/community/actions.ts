@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { createClient } from "@/server/supabase";
 import { createPostSchema, updatePostSchema, createCommentSchema } from "./schema";
+import { createRecruitSchema } from "@/features/recruit/schema";
 
 export type CommunityActionState = {
   error?: string;
@@ -142,6 +143,17 @@ export async function promoteToRecruit(formData: FormData): Promise<void> {
   }
   if (post.authorId !== user.id) {
     redirect(`/community/${postId}?promoteError=${encodeURIComponent("작성자만 정식 모집으로 만들 수 있어요.")}`);
+  }
+
+  // 모집글은 커뮤니티 글보다 제목·소개 최소 길이가 엄격함(각각 5자/10자 이상).
+  // 검증 없이 그대로 승격하면 나중에 이 모집글을 수정할 때 손대지도 않은
+  // 제목/소개가 현재 스키마에 걸려 저장이 막히는 문제가 생겨 여기서 미리 막는다.
+  const titleContentCheck = createRecruitSchema
+    .pick({ title: true, content: true })
+    .safeParse({ title: post.title, content: post.content });
+  if (!titleContentCheck.success) {
+    const message = titleContentCheck.error.issues[0]?.message ?? "제목/소개를 조금 더 작성해주세요.";
+    redirect(`/community/${postId}?promoteError=${encodeURIComponent(`모집글로 만들기엔 내용이 부족해요. ${message}`)}`);
   }
 
   let recruitId: string;
