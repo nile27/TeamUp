@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createPostSchema, type CreatePostInput } from "../schema";
-import { createPost } from "../actions";
+import { createPost, updatePost } from "../actions";
 import { COMMUNITY_TAG_LABEL } from "@/config/labels";
 
 const TAG_OPTIONS = (["IDEA", "QUESTION", "ETC"] as const).map((value) => ({
@@ -18,8 +18,13 @@ const TAG_OPTIONS = (["IDEA", "QUESTION", "ETC"] as const).map((value) => ({
   label: COMMUNITY_TAG_LABEL[value],
 }));
 
-export function CommunityForm() {
-  const [state, formAction, isPending] = useActionState(createPost, null);
+interface CommunityFormProps {
+  post?: { id: string; tag: CreatePostInput["tag"]; title: string; content: string };
+}
+
+export function CommunityForm({ post }: CommunityFormProps) {
+  const isEdit = !!post;
+  const [state, formAction, isPending] = useActionState(isEdit ? updatePost : createPost, null);
   const [isTransitioning, startTransition] = useTransition();
 
   const {
@@ -30,7 +35,7 @@ export function CommunityForm() {
     formState: { errors },
   } = useForm<CreatePostInput>({
     resolver: zodResolver(createPostSchema),
-    defaultValues: { tag: "IDEA", title: "", content: "" },
+    defaultValues: post ?? { tag: "IDEA", title: "", content: "" },
     mode: "onBlur",
   });
 
@@ -38,6 +43,7 @@ export function CommunityForm() {
 
   const onSubmit = (data: CreatePostInput) => {
     const formData = new FormData();
+    if (post) formData.append("postId", post.id);
     formData.append("tag", data.tag);
     formData.append("title", data.title);
     formData.append("content", data.content);
@@ -103,8 +109,10 @@ export function CommunityForm() {
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            등록 중...
+            {isEdit ? "수정 중..." : "등록 중..."}
           </>
+        ) : isEdit ? (
+          "수정하기"
         ) : (
           "등록하기"
         )}

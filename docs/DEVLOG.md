@@ -18,6 +18,20 @@
   - 지원자 관리 화면(`ApplicantRow`)에도 지원자 포트폴리오를 `<details>` 토글로 표시 — 원래 피드백이 "지원자 검토할 때 포트폴리오 볼 수 있으면 좋겠다"는 맥락이었어서.
   - 초안에서 버그 2개 자체 발견·수정: (1) `MarkdownEditor`를 처음엔 uncontrolled(`name` 속성)로 짰다가, 부모 폼이 react-hook-form이라 `register` 안 된 필드는 제출 데이터에 안 잡힌다는 걸 뒤늦게 깨닫고 `Controller` 기반 controlled 컴포넌트로 다시 씀(`RecruitForm`의 `TechStackInput` 패턴과 동일하게). (2) `<Label htmlFor="portfolio">`인데 정작 `MarkdownEditor` 내부 textarea에 `id`가 없어서 `getByLabel`이 못 찾던 것 — `id` prop 추가.
   - 실제 계정 2개(작성자+지원자)로 프로필 작성 → 저장 → 마이페이지 반영 → 지원자 관리 화면에서 포트폴리오 노출까지 전체 플로우 수동 확인 + E2E(`profile-edit.spec.ts`) 추가. 전체 19 passed / 1 skipped.
+  - 사용 안 하는 `"use client"` 지시어 2개(`role-input.tsx`, `tech-stack-input.tsx`) 정리 — 자체 훅 없이 이미 client인 `recruit-form` 안에서만 쓰이는 것들이라 제거해도 동작 동일.
+- **E2E CI 자동화** (`feat/e2e-ci-cleanup` 브랜치). 백로그 마지막 항목 처리.
+  - `.github/workflows/e2e.yml`: 매일 스케줄(05:00 KST) + 수동 실행(`workflow_dispatch`)으로 Playwright E2E 실행.
+  - `e2e/global.teardown.ts`: `SUPABASE_SERVICE_ROLE_KEY`로 `teamup.e2e.*` 계정을 Prisma `User`(cascade)와 Supabase `auth.users` 양쪽에서 정리. 키 없으면 안전하게 스킵.
+  - `.env`에 실제 service_role 키 등록 과정에서 시행착오 2번 (URL이 잘못 들어감 → anon 키가 잘못 들어감) 겪은 뒤 정상 등록 확인. 더미 계정 생성 → teardown 실행 → 실제 삭제까지 검증(그 김에 그동안 쌓여있던 진짜 고아 Auth 계정 87건도 함께 정리됨).
+  - GitHub repo Secrets 5개 등록 후 `workflow_dispatch`로 수동 트리거해 `success` 확인 완료.
+- **글 수정 페이지** (`feat/edit-pages` 브랜치). PRD의 "Phase 2 이후" 목록 중 하나를 순서대로 처리 시작.
+  - 커뮤니티: `updatePost` 액션 + `/community/[id]/edit` 페이지. `CommunityForm`을 `post` prop 있으면 수정 모드(defaultValues 채움 + `updatePost` 호출)로 동작하도록 리팩터링해 생성 폼과 공유.
+  - 모집: `updateRecruit` 액션(역할 배열은 `deleteMany` 후 `create`로 통째 교체, `$transaction`으로 묶음) + `/recruit/[id]/edit` 페이지. `RecruitForm`도 동일 패턴(`recruit` prop)으로 create/edit 공유. ISR 캐시(`getRecruitById`)를 안 쓰는 별도 조회 함수(`getRecruitForEdit`) 추가해 수정 폼엔 항상 최신 값 프리필.
+  - 둘 다 작성자 본인 아니면 서버 액션에서 재확인 후 리다이렉트. 상세 페이지에 작성자에게만 보이는 "수정" 버튼 추가.
+  - E2E 2개 추가(`community.spec.ts`, `recruit-create.spec.ts`에 작성→수정→반영 확인 케이스). 전체 스위트 중 무관한 기존 테스트 1개(정식 모집 승격, `getByText("팀원")`이 route announcer 잔여 텍스트와 겹치는 병렬 실행 flake)만 실패 — 단독 실행하면 통과 확인, 내 변경과 무관.
+
+**다음에 할 것**
+- PRD "Phase 2 이후" 남은 항목 순서대로 진행 중(글 수정 페이지 완료) — 다음은 브레인스토밍 스터디/알림/팀 협업 툴, 그다음 AI 기능. RN 모바일 앱 + Spring 전환으로 넘어갈 타이밍은 별도로 판단하기로 함.
 - `/devlog` 커스텀 슬래시 명령 신설 (`.claude/commands/devlog.md`). 매번 말로 안 시켜도 그날 커밋/변경 파일을 훑어서 `DEVLOG.md` 최신 항목 위에 자동으로 정리해 넣는 명령. 만드는 과정에서 템플릿 블록이 파일 최상단이 아니라 8/19와 8/18 항목 사이에 끼어있다는 걸 발견 — 삽입 기준을 템플릿 위치가 아니라 "파일에서 첫 번째로 나오는 `## YYYY-MM-DD` 줄"로 고쳐서 반영.
 - **역할 기반 필터 보류 결정** — 어제 논의됐던 "/recruit 목록 필터를 기술스택이 아니라 프론트/백엔드/디자이너/기획자 역할 기준으로 바꾸는 안"을 사용자가 최종 보류하기로 함. 지금 자유 텍스트인 `RecruitRole.name` 표준화까지 손대는 것치곤 실익이 크지 않고 "작성자 재량"으로 두는 게 낫다는 판단. 당분간 진행 안 함.
 - **카카오 소셜 로그인 실연동 완료** — 어제 중단됐던 것 이어서 진행. 카카오 디벨로퍼스 최신 UI 기준 메뉴 경로 확인(블로그 글 참고: `[앱] > 플랫폼 키 > REST API 키`가 어제 못 찾던 "플랫폼" 메뉴의 새 이름이었음) + Supabase Provider 설정 + 실계정 테스트. 코드 변경은 없었음(구글 때 이미 공용 경로로 대비해둔 `socialLogin`/`/auth/callback` 그대로 재사용). DB에서 `auth.identities` 직접 조회해 같은 계정에 email/google/kakao 세 identity가 전부 연결된 것 확인 — 이제 이 계정 하나로 세 가지 로그인 방식 다 됨.
