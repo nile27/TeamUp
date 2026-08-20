@@ -28,7 +28,9 @@ test.describe("커뮤니티", () => {
     await expect(page).toHaveURL(/\/recruit\/[^/]+$/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
     await expect(page.getByText("개발자 구해요")).toBeVisible();
-    await expect(page.getByText("팀원")).toBeVisible();
+    // "팀원"만으로 찾으면 사이트 타이틀("TeamUp — 사이드프로젝트 팀원 매칭")을 읽어주는
+    // route announcer와도 매칭돼 strict mode violation이 남 — 뱃지 전체 텍스트로 특정.
+    await expect(page.getByText("팀원 · 1명", { exact: true })).toBeVisible();
   });
 
   test("글 작성 → 수정 → 변경 내용이 상세에 반영된다", async ({ page }) => {
