@@ -27,10 +27,22 @@
   - 검증: `npx tsc --noEmit` 통과, `npx expo export -p android`로 실제 번들링(1775 모듈) 성공 확인. 실기기/Expo Go 구동은 아직 안 해봄(다음 세션 또는 사용자가 직접).
   - `eas.json`(internal 프로필) + `README.md` 작성.
 
+- **`/api-doc` UI 깨짐 수정** (`dev` 브랜치, 아직 커밋 안 함). 배포한 `@scalar/api-reference-react`(page.tsx로 렌더)를 실제로 열어보니 레이아웃이 전부 무너져 있었음(세로로 쌓인 텍스트, 거대한 미스타일 SVG, 패널 중복). 원인은 루트 `layout.tsx`의 Tailwind `globals.css` preflight가 Scalar 자체 CSS를 덮어쓰는 충돌 — React 컴포넌트로 렌더하는 한 같은 문서 트리를 타서 못 피함. `page.tsx`/클라이언트 컴포넌트를 걷어내고 `/api-doc`을 **Route Handler**(`route.ts`)로 바꿔 앱 CSS를 아예 안 타는 독립 HTML을 반환, Scalar는 CDN 스탠드얼론 스크립트(설치 버전과 동일하게 `1.66.1` 고정)로 로드하도록 교체. 이 과정에서 마운트 엘리먼트 id를 `#api-reference`로 뒀더니 Scalar가 그 id를 매직 셀렉터로 인식해 내가 호출한 `createApiReference`와 충돌(`Document not found in configList` 경고, 스켈레톤에서 영영 안 넘어감) — id를 `#app`으로 바꿔 해결. 이제 안 쓰는 `@scalar/api-reference-react` 패키지도 제거. Playwright로 실제 렌더(사이드바 5개 엔드포인트, 스펙 정상 표시) + "Test Request" 클릭해 요청 빌더까지 뜨는 것 확인.
+
+- **`/api-doc`·`/api/openapi.json` 프로덕션 노출 여부 점검** (`dev` 브랜치, 코드 변경 없음 — 이미 다 막혀있었음). 두 라우트 모두 `NODE_ENV === "production"`이면 404 반환하는 가드가 이미 있었고(전날 작업분), grep으로 Scalar/OpenAPI를 노출하는 다른 경로도 없음을 확인. Next.js CLI 소스(`node_modules/next/dist/bin/next`)에서 `build`/`start` 커맨드는 `NODE_ENV`를 `production`으로 기본 설정한다는 것도 직접 확인(Vercel도 이 커맨드를 그대로 실행하므로 동일 적용). `npm run build && npm run start`로 실제 프로덕션 모드 재현해 두 라우트 다 404 확인, `npm run dev`에선 정상 200 확인.
+
+- **전역 404/에러 페이지 신설** (`dev` 브랜치, 커밋 완료). 지금까지 `recruit`·`community`·`dashboard`엔 라우트별 `not-found.tsx`/`error.tsx`/`loading.tsx`가 있었지만 그 밖의 경로(`/theme-test`, 존재하지 않는 URL 등)는 Next 기본 화면이 뜨던 걸 보완.
+  - `src/app/not-found.tsx` — 전역 404, `AppShell`로 감싸서 앱 톤 유지(not-found.tsx는 Server Component라 기존 `recruit/[id]/not-found.tsx`처럼 `AppShell`·`AppNav`의 `next/headers` 사용 가능).
+  - `src/app/error.tsx` — 전역 런타임 에러 바운더리. `error.tsx`는 Client Component 경계라 `AppShell`을 못 씀(`next/headers`가 client 번들에 들어가면 빌드 깨짐) — 기존 `recruit/error.tsx` 등과 동일하게 최소 마크업 + 테마 클래스만 사용.
+  - `src/app/global-error.tsx` — 루트 레이아웃 자체가 터졌을 때만 쓰이는 최상위 바운더리(자체 `<html><body>` 포함, `globals.css` 재사용). shadcn `Button`(`@base-ui/react` 의존) 대신 순수 `<button>` 사용 — 최상위 폴백은 의존성을 최소로.
+  - `src/app/loading.tsx`(선택 항목) — 최상위 로딩 폴백. `recruit`/`community` 목록은 이미 페이지 내부 `<Suspense>`로 자체 스켈레톤을 쓰고 있어 영향 없고, `recruit/new`·`community/new`처럼 라우트 loading.tsx도 인라인 Suspense도 없던 폼 페이지들의 실제 공백 구간을 메움.
+  - 커버리지 점검(표는 대화 리포트 참고) — 루트 3종 추가 후 전 라우트가 필요한 상태 처리를 갖춤. 특이사항 없음.
+  - 검증: `npx tsc --noEmit`·`npm run build`·`npm run lint` 통과. Playwright로 실제 브라우저 렌더 확인 — `/zzz`(404, CTA 2개), 임시 throw 라우트(에러 바운더리), 루트 레이아웃에 임시 throw 삽입해 `global-error.tsx`까지 전부 텍스트·스크린샷으로 확인 후 임시 코드 원상복구.
+
 **다음에 할 것**
 - 실기기/Expo Go로 로그인→목록→상세→지원 플로우 실제 구동 확인 (Supabase 프로젝트 키를 `TeamUp-mobile/.env`에 입력해야 함 — 사용자가 직접, `.env`는 건드리지 않음).
 - 여유 되면 React Native Reusables 도입 검토, Jest+Maestro 테스트, EAS internal 빌드로 실기기 시연.
-- `TeamUp/src/app/api/*`·`TeamUp-mobile/` 둘 다 아직 커밋 전. 웹 쪽 커밋 메시지는 `feat(api): RN 앱용 REST API 라우트 신설`, RN 레포는 초기 커밋(`feat: Expo 앱 스캐폴딩 + 척추 화면 초안`) 추천 — 사용자 승인 후 진행.
+- `TeamUp-mobile/`은 아직 커밋 전 — 사용자가 나중에 진행하기로 함.
 
 ---
 
