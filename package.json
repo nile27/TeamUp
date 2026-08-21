@@ -16,9 +16,11 @@
     "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^9.1.0",
     "@base-ui/react": "^1.7.0",
     "@hookform/resolvers": "latest",
     "@prisma/client": "^6.4.1",
+    "@scalar/api-reference-react": "^0.9.65",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "class-variance-authority": "^0.7.1",
