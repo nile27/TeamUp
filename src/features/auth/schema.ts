@@ -26,3 +26,13 @@ export const signupSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
+
+// POST /api/profile(RN 등 무쿠키 클라이언트의 회원가입 2단계) 검증용.
+export const ensureProfileSchema = z.object({
+  nickname: z
+    .string()
+    .min(2, { message: "닉네임은 2자 이상이어야 합니다." })
+    .max(20, { message: "닉네임은 20자 이하이어야 합니다." }),
+});
+
+export type EnsureProfileInput = z.infer<typeof ensureProfileSchema>;
