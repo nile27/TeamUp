@@ -8,6 +8,32 @@
 
 ---
 
+## 2026-08-21 (금)
+
+**한 일**
+- **RN 파일럿 ① 웹 REST API 신설** (`dev` 브랜치, 아직 커밋 안 함). `docs/rn-pilot-plan.md`·`docs/rn-build-prompts.md` 계획대로 RN 앱이 호출할 얇은 API 4+1개 추가.
+  - `src/server/api-auth.ts`: `Authorization: Bearer <supabase access token>` 헤더 검증용 `getUserFromRequest` 신설 — 웹은 쿠키 기반 `server/supabase.ts` 그대로, RN 같은 무쿠키 클라이언트만 이걸 사용.
+  - `GET /api/recruit`(목록, `?stack=` 필터) · `POST /api/recruit`(생성) · `GET /api/recruit/[id]`(상세) · `POST /api/applications`(지원) · `GET /api/dashboard`(내 모집/글/지원현황) — 전부 기존 `features/*/queries.ts`·`actions.ts`의 Prisma 쿼리·zod 스키마·`calcCompleteness` 재사용, 라우트는 얇게 유지.
+  - 로컬에서 `curl`로 200(목록·상세)/404(없는 id)/401(미인증 POST 3종) 확인, `npx tsc --noEmit`·`npm run lint` 통과(기존 경고 외 신규 이슈 없음).
+  - `docs/api-contract.md` 신규 — 엔드포인트별 요청/응답 예시, 인증 방식 정리(RN·추후 Spring 이관 시 공유 기준).
+  - **Swagger/OpenAPI 문서화 추가** — `@asteasolutions/zod-to-openapi`로 `features/*/schema.ts`의 기존 zod 스키마를 그대로 변환해 요청 스키마 생성(`src/server/openapi/registry.ts`), 응답 스키마는 문서 전용으로 별도 작성(Prisma 반환값이라 zod가 없어서 불가피). `GET /api/openapi.json`(스펙 서빙) + `/api-doc`(Scalar, 프로덕션에선 `notFound()`로 비공개) 신규. 인라인이던 `profile` 라우트의 zod 스키마(`ensureProfileSchema`)는 재사용을 위해 `features/auth/schema.ts`로 이동. `curl`로 스펙 생성 확인(`createRecruitSchema`의 `.refine()`은 JSON Schema로 못 옮기니 자동으로 기본 타입만 남는 것도 확인), `/api-doc` 200 렌더 확인, `tsc`/`lint` 통과.
+
+- **RN 파일럿 ②+③ 일부 Expo 앱 스캐폴딩 & 척추 화면 초안** (`~/Desktop/TeamUp-mobile`, 신규 레포, 아직 커밋 안 함). Expo(SDK 57) + Expo Router + TypeScript + NativeWind + React Query + Supabase SDK(`expo-secure-store` 세션)로 세팅.
+  - React Native Reusables는 이번엔 생략(시간 대비 실익 낮다고 판단, 커스텀 뷰로 충분) — 화면은 NativeWind 유틸리티 클래스로 직접 구성.
+  - 화면: `(auth)/login`·`(auth)/signup`(react-hook-form+zod, 웹과 동일 검증 규칙) → `(app)/recruit/index`(목록, 기술스택 필터, 빈/로딩/에러 3상태) → `(app)/recruit/[id]`(상세, 완성도 게이지, 지원 버튼) → `(app)/dashboard`(지원한 모집 탭, 로그아웃). 탭 네비게이션 + 인증 가드(`(app)/_layout.tsx`).
+  - `src/lib/completeness.ts`, `src/schema/*.ts`, `src/config/tech-stack.ts`·`labels.ts`(recruit 범위만)는 웹에서 복붙 — 주석에 원본 경로 명시.
+  - 회원가입은 Supabase Auth SDK로 직접 `signUp()` 후 프로필 레코드가 필요해서, 웹에 `POST /api/profile` 엔드포인트를 추가로 신설(웹 signup 액션의 Prisma User 생성 단계와 동일 로직).
+  - **셋업 중 막힌 것들**: (1) `expo-router`가 끌어오는 `@expo/ui`(Radix 웹 컴포넌트) peer dep 충돌로 `npm install`이 실패 — `--legacy-peer-deps`로 우회(RN 프로젝트라 실제 충돌 아님). (2) Reanimated 4.x부터 Babel worklets 플러그인이 `react-native-reanimated/plugin`에서 `react-native-worklets/plugin`(별도 패키지)로 분리된 걸 모르고 구버전 경로 그대로 써서 번들 실패 → 패키지 설치 + `babel.config.js` 경로 수정. (3) `babel-preset-expo`가 최신 Expo 템플릿에선 `expo` 패키지에 안 얹혀있어(중첩 안 됨) 직접 devDependency로 추가해야 했음. (4) TypeScript 6.0.3이 `baseUrl` deprecate — `paths`만 남기고 제거(TS7+ 방식).
+  - 검증: `npx tsc --noEmit` 통과, `npx expo export -p android`로 실제 번들링(1775 모듈) 성공 확인. 실기기/Expo Go 구동은 아직 안 해봄(다음 세션 또는 사용자가 직접).
+  - `eas.json`(internal 프로필) + `README.md` 작성.
+
+**다음에 할 것**
+- 실기기/Expo Go로 로그인→목록→상세→지원 플로우 실제 구동 확인 (Supabase 프로젝트 키를 `TeamUp-mobile/.env`에 입력해야 함 — 사용자가 직접, `.env`는 건드리지 않음).
+- 여유 되면 React Native Reusables 도입 검토, Jest+Maestro 테스트, EAS internal 빌드로 실기기 시연.
+- `TeamUp/src/app/api/*`·`TeamUp-mobile/` 둘 다 아직 커밋 전. 웹 쪽 커밋 메시지는 `feat(api): RN 앱용 REST API 라우트 신설`, RN 레포는 초기 커밋(`feat: Expo 앱 스캐폴딩 + 척추 화면 초안`) 추천 — 사용자 승인 후 진행.
+
+---
+
 ## 2026-08-20 (목)
 
 **한 일**
@@ -29,6 +55,15 @@
   - 모집: `updateRecruit` 액션(역할 배열은 `deleteMany` 후 `create`로 통째 교체, `$transaction`으로 묶음) + `/recruit/[id]/edit` 페이지. `RecruitForm`도 동일 패턴(`recruit` prop)으로 create/edit 공유. ISR 캐시(`getRecruitById`)를 안 쓰는 별도 조회 함수(`getRecruitForEdit`) 추가해 수정 폼엔 항상 최신 값 프리필.
   - 둘 다 작성자 본인 아니면 서버 액션에서 재확인 후 리다이렉트. 상세 페이지에 작성자에게만 보이는 "수정" 버튼 추가.
   - E2E 2개 추가(`community.spec.ts`, `recruit-create.spec.ts`에 작성→수정→반영 확인 케이스). 전체 스위트 중 무관한 기존 테스트 1개(정식 모집 승격, `getByText("팀원")`이 route announcer 잔여 텍스트와 겹치는 병렬 실행 flake)만 실패 — 단독 실행하면 통과 확인, 내 변경과 무관.
+- **정식 모집 승격 검증 버그 수정** (`fix/promote-recruit-validation` 브랜치). `promoteToRecruit`이 zod 검증 없이 그대로 `prisma.recruit.create`를 호출해서, 짧은 커뮤니티 글(제목 5자/소개 10자 미만)도 그대로 모집글로 승격되던 문제. 이렇게 만들어진 모집글은 이후 수정 페이지에서 손대지 않은 제목/소개가 현재 스키마 검증에 걸려 저장이 막히는 버그로 이어짐(실사용 중 발견). 승격 시점에 `createRecruitSchema`로 미리 검증해서 차단. 부수적으로 위에서 언급한 `community.spec.ts` flaky selector도 이 브랜치에서 같이 수정.
+- **RN 모바일 앱 확장 아키텍처 논의**. `docs/rn-spring-migration-prompt.md`(다음 세션 시작용 프롬프트) 작성 후, 대화로 세부 방향 합의 — Spring 백엔드 전환은 "되면 하고 안 되면 마는" 보류 사항으로 두고 RN을 먼저 진행하기로 함.
+  - **레포**: 폴리레포(웹 안 건드림, RN 독립 프로젝트) — 워크스페이스로 의존성 안 묶는 게 핵심(RN/Next.js React 버전 충돌 회피).
+  - **API**: `app/api/*`에 얇은 REST 라우트 신설해 기존 `queries.ts`/`actions.ts` 로직 재사용, RN이 fetch로 호출. 읽기는 Supabase 직접 호출도 검토, 쓰기(지원·승격 등 비즈니스 로직 있는 것)는 API 경유.
+  - **데이터 훅**: React Query는 RN에서만 사용 — 웹에 쓰면 CSR로 떨어져 SSR/SSG/ISR 렌더링 전략이 깨지므로 웹은 RSC `await` 방식 그대로 유지.
+  - **UI**: shadcn은 DOM 기반이라 RN에서 재사용 불가 — NativeWind + React Native Reusables(shadcn의 RN 포트, 동일 CLI 복붙 워크플로)로 RN 전용 컴포넌트 구성, 디자인 토큰만 웹과 맞춤.
+  - **로직 공유**(zod 스키마 등): 지금 스코프엔 공유 패키지/모노레포 없이 파일 복붙으로 충분 — 나중에 동기화가 자주 아파지면 그때 전환.
+  - **배포**: 웹은 기존 Vercel 파이프라인 그대로, RN은 Expo + EAS Build로 별도 트랙(포트폴리오 목적이라 초반엔 Expo Go/내부 배포 수준).
+  - 결론은 메모리(`rn_migration_architecture`)에 저장해 다음 세션에서 바로 이어갈 수 있게 함.
 
 **다음에 할 것**
 - PRD "Phase 2 이후" 남은 항목 순서대로 진행 중(글 수정 페이지 완료) — 다음은 브레인스토밍 스터디/알림/팀 협업 툴, 그다음 AI 기능. RN 모바일 앱 + Spring 전환으로 넘어갈 타이밍은 별도로 판단하기로 함.
