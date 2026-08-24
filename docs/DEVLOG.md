@@ -27,6 +27,16 @@
 - 두 fix 다 배포됨 — 모바일 쪽에서 재테스트 요청(지원 완료 상태 유지 + 지원 성공 시 500 안 뜨는지), `TeamUp-mobile/docs/testing/1차_report.md` 업데이트 예정.
 - `TeamUp-mobile` 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)는 아직 미해결 — 실기기에서 재현 여부 확인 필요.
 
+- **`recruit/[id]`·`community/[id]`의 `notFound()`가 HTTP 200을 반환하는 문제 — 원인 규명, 안 고치기로 결정**. 배포 후 전체 스모크 테스트하다가 발견: 커스텀 404 UI는 정상 렌더되는데 상태 코드만 200. 최소 재현(빈 페이지 + `notFound()` 하나)까지 좁혀서 확인한 결과 **Next.js 자체의 알려진 버그**(`loading.tsx`가 있는 라우트는 스트리밍 응답이라 body를 보내기 전에 이미 200 헤더를 먼저 흘려보내서, 이후 `notFound()`가 호출돼도 상태 코드를 못 바꿈 — [vercel/next.js#63478](https://github.com/vercel/next.js/issues/63478), [#76474](https://github.com/vercel/next.js/issues/76474), [#64446](https://github.com/vercel/next.js/issues/64446)). Turbopack/webpack 둘 다 재현, `force-dynamic` 옵션도 안 먹힘 — App Router 안에서 깔끔한 우회법 자체가 없는 것으로 확인.
+  - `recruit/[id]/loading.tsx`·`community/[id]/loading.tsx`는 이번 세션 전부터 있던 것이라 원래 있던 버그. 이번에 추가한 전역 `src/app/loading.tsx`가 사정거리를 넓히긴 했지만(앞으로 `notFound()` 쓰는 새 페이지가 생기면 자동으로 영향받음), 지금 당장 `notFound()`를 쓰는 곳은 이 두 라우트뿐이라 실질 영향 없음.
+  - 고칠 방법은 있음(예: 존재 여부 체크를 `layout.tsx`로 옮겨 Suspense 경계 밖에서 판단) — 화면엔 올바른 404 UI가 뜨니 실사용자는 못 느끼는 문제라 **사용자 판단으로 지금은 손 안 대기로 결정**. 나중에 SEO나 헬스체크가 상태 코드에 의존하게 되면 재검토.
+
+- **지원자 수락/거절 버튼이 눌러도 반응 없다가 다른 페이지 갔다 오면 반영되는 문제 수정**. 증상 보고: "버튼 눌러도 이벤트가 동작 안 함, 콘솔 에러도 없음" → 실제론 DB는 즉시 갱신되고 있었고(사용자가 다른 작업 하다 다시 들어가니 반영된 걸 확인), 문제는 **클라이언트 라우터 캐시가 안 갱신되는 것**이었음.
+  - 원인: `updateApplicationStatus` Server Action이 `revalidatePath` 직후 **폼을 제출한 바로 그 페이지(`/recruit/[id]/applicants`)로 다시 `redirect()`** 하고 있었음 — Next.js에 "Server Action이 revalidate 후 redirect하면 클라이언트 라우터 캐시가 안 지워진다"는 알려진 이슈가 있음([vercel/next.js#49450](https://github.com/vercel/next.js/issues/49450), 관련 수정 PR [#70715](https://github.com/vercel/next.js/pull/70715)). 이미 있는 페이지로 다시 redirect할 이유가 없어서, `redirect()` 호출을 제거 — Server Action이 redirect 없이 끝나면 Next가 알아서 현재 라우트를 새로고침함.
+  - `npx tsc --noEmit`·`lint` 통과, 관련 E2E(`recruit-applicant-management.spec.ts`) 재실행해 정상 통과 확인.
+
+- **간헐적으로 뜨는 "데이터를 불러오는 중 오류가 발생했습니다"(React 에러 #441) 문의 확인**. React #441은 "Server Components 렌더링 중 에러(프로덕션에선 메시지 생략)"라는 범용 에러라 클라이언트 콘솔만으로는 원인이 안 보임 — 오늘 검증 중 두 번 관찰했던 **Supabase pooler 일시적 연결 끊김**(원인 불명, DB 자체는 건강, 재시도하면 바로 복구)과 정황이 일치(간헐적·재현 안 됨·에러 상세 없음). 코드 버그로 보긴 어렵고, `error.tsx`의 "다시 시도" 버튼이 의도대로 동작하는 상황으로 판단. 재현 빈도가 늘면 Vercel 함수 로그로 digest 대조해 확인 필요.
+
 ---
 
 ## 2026-08-22 (토)

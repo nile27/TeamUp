@@ -241,7 +241,11 @@ export async function updateApplicationStatus(formData: FormData): Promise<void>
 
   revalidatePath(`/recruit/${application.recruitId}/applicants`);
   revalidatePath("/dashboard");
-  redirect(`/recruit/${application.recruitId}/applicants`);
+  // 폼이 이미 이 페이지(/recruit/[id]/applicants)에서 제출되므로 같은 경로로 redirect()하지
+  // 않는다 — Server Action이 revalidatePath 직후 같은 경로로 redirect하면 클라이언트 라우터
+  // 캐시가 안 지워져 수락/거절해도 화면이 그대로였다가 다른 페이지 갔다 와야 반영되는 문제가
+  // 있었음(Next.js 이슈: https://github.com/vercel/next.js/issues/49450). redirect 없이 끝내면
+  // Server Action 완료 후 Next가 알아서 현재 라우트를 새로고침한다.
 }
 
 // 상세 페이지 진입 시 호출 — ISR 캐시(getRecruitById)와 분리된 별도 mutation이라
