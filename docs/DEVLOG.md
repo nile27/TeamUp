@@ -8,6 +8,23 @@
 
 ---
 
+## 2026-08-24 (월)
+
+**한 일**
+- **RN 1차 실기기(헤드리스 에뮬레이터) 테스트에서 발견된 버그 수정 + 배포**. 테스트는 `TeamUp-mobile` 쪽에서 진행(리포트: `TeamUp-mobile/docs/testing/1차_report.md`) — 로그인→목록→상세→지원 플로우 자체는 프로덕션 API(`team-up-olive.vercel.app`) 기준으로 정상 동작 확인됐지만, 지원 완료 후에도 상세 화면이 계속 "지원하기"로 보이는 버그 발견.
+  - 원인: 지난 세션에 `GET /api/recruit/[id]`에 `alreadyApplied` 필드를 추가하는 수정을 로컬에서 해뒀는데 **커밋·배포가 안 된 채로 남아있었음** — 모바일이 실제로 호출하는 프로덕션 API는 옛날 응답(필드 자체 없음)을 주고 있었던 것.
+  - `getApplicationForUser` 재사용해 상세 응답에 `alreadyApplied`(로그인 유저의 기존 지원 여부, 비로그인이면 항상 `false`) 포함. `POST /api/applications`도 중복 지원 실패를 Prisma `P2002`로 구분해 "이미 지원한 모집입니다"로 명확히 안내하도록 개선(기존엔 모든 실패가 뭉뚱그려진 메시지).
+  - 로컬 dev 서버에서 `curl`로 `alreadyApplied: false` 응답·401(미인증) 확인, `tsc`/`lint` 통과.
+  - `docs/api-contract.md`에 `alreadyApplied` 필드 반영.
+
+**다음에 할 것**
+- 이 fix가 배포되면 모바일 쪽에서 재테스트 필요(지원 완료 상태가 새로고침·재시작에도 유지되는지) — `TeamUp-mobile` 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)도 실기기에서 재현 여부 확인 필요.
+
+---
+
+## 2026-08-22 (토)
+- 작업 없음
+
 ## 2026-08-21 (금)
 
 **한 일**
@@ -39,10 +56,15 @@
   - 커버리지 점검(표는 대화 리포트 참고) — 루트 3종 추가 후 전 라우트가 필요한 상태 처리를 갖춤. 특이사항 없음.
   - 검증: `npx tsc --noEmit`·`npm run build`·`npm run lint` 통과. Playwright로 실제 브라우저 렌더 확인 — `/zzz`(404, CTA 2개), 임시 throw 라우트(에러 바운더리), 루트 레이아웃에 임시 throw 삽입해 `global-error.tsx`까지 전부 텍스트·스크린샷으로 확인 후 임시 코드 원상복구.
 
+- **dev → main 배포** (PR #16, 머지 완료). RN 앱이 배포된 웹 API(`https://team-up-olive.vercel.app`)를 바로 테스트할 수 있도록, 오늘 쌓인 API 라우트·OpenAPI 문서화·전역 에러 페이지를 한 번에 배포. `tsc`/`lint`/`build` 로컬 확인 후 `dev` 푸시 → PR 생성 → CI(Lint & Typecheck ×2, Vercel preview build) green 확인 → 머지. Vercel이 `main` 기준으로 프로덕션 자동 배포.
+
+- **백로그 기록**: 좋아요/저장(북마크) 토글이 서버 왕복 후에야 UI가 바뀌어 체감 지연이 있다는 피드백 — 낙관적 업데이트 필요 항목으로 `CLAUDE.md`/`AGENTS.md`의 "나중에 추가"에 기록(`BookmarkButton`·`LikeButton` 대상). 지금 당장 고치진 않음.
+
 **다음에 할 것**
-- 실기기/Expo Go로 로그인→목록→상세→지원 플로우 실제 구동 확인 (Supabase 프로젝트 키를 `TeamUp-mobile/.env`에 입력해야 함 — 사용자가 직접, `.env`는 건드리지 않음).
+- 실기기/Expo Go로 로그인→목록→상세→지원 플로우 실제 구동 확인 (Supabase 프로젝트 키를 `TeamUp-mobile/.env`에 입력해야 함 — 사용자가 직접, `.env`는 건드리지 않음). 이제 배포된 API(`team-up-olive.vercel.app`)로 바로 테스트 가능.
 - 여유 되면 React Native Reusables 도입 검토, Jest+Maestro 테스트, EAS internal 빌드로 실기기 시연.
 - `TeamUp-mobile/`은 아직 커밋 전 — 사용자가 나중에 진행하기로 함.
+- 좋아요/저장 낙관적 업데이트 (백로그, 위 참고).
 
 ---
 
