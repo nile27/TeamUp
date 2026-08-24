@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateTag } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { applyToRecruitSchema } from "@/features/recruit/schema";
 import { getUserFromRequest } from "@/server/api-auth";
 import { prisma } from "@/server/db";
@@ -35,9 +36,12 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json({ error: "이미 지원한 모집입니다." }, { status: 400 });
+    }
     console.error("Apply To Recruit Error:", error);
     return NextResponse.json(
-      { error: "이미 지원했거나, 지원 처리 중 오류가 발생했습니다." },
+      { error: "지원 처리 중 오류가 발생했습니다." },
       { status: 400 }
     );
   }
