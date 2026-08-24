@@ -35,6 +35,7 @@ Authorization: Bearer <supabase access token>
 ```json
 { "data": [ { "id": "...", "type": "DEV", "title": "...", "techStack": ["..."], "roles": [...], "_count": { "applications": 0, "bookmarks": 0 }, ... } ] }
 ```
+(목록 응답엔 `alreadyApplied` 없음 — 상세에서만 포함. `applyToRecruit` 성공 후엔 상세 재조회로 갱신.)
 
 ---
 
@@ -68,10 +69,10 @@ Authorization: Bearer <supabase access token>
 
 ## `GET /api/recruit/[id]`
 
-모집 상세 (작성자·역할·지원수·저장수 포함).
+모집 상세 (작성자·역할·지원수·저장수 포함). `Authorization` 헤더로 로그인 상태면 `alreadyApplied`에 내가 이미 지원했는지 포함(비로그인이면 항상 `false`) — 지원 여부는 클라이언트가 판단하지 않고 이 값을 그대로 신뢰할 것.
 
 **응답**
-- `200` `{ "data": <recruit> }`
+- `200` `{ "data": { ...recruit, "alreadyApplied": boolean } }`
 - `404` `{ "error": "모집을 찾을 수 없습니다." }`
 
 ---
