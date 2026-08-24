@@ -17,8 +17,15 @@
   - 로컬 dev 서버에서 `curl`로 `alreadyApplied: false` 응답·401(미인증) 확인, `tsc`/`lint` 통과.
   - `docs/api-contract.md`에 `alreadyApplied` 필드 반영.
 
+- **`POST /api/applications` 성공해도 500으로 보이는 버그 수정 + 배포**. `TeamUp-mobile`에서 지원하기 후 발견 — DB엔 `Application`이 정상 생성되는데 클라이언트엔 500(빈 응답)으로 보임. 웹 레포 쪽에 로컬로 적용해둔 수정을 리뷰하며 근본 원인까지 추적.
+  - **근본 원인**: `updateTag()`는 Server Action에서만 호출 가능 — Route Handler에서 부르면 Next.js가 무조건 throw함(`node_modules/next/dist/server/web/spec-extension/revalidate.js`에서 직접 확인, `workStore.page.endsWith('/route')`면 즉시 에러). `features/recruit/actions.ts`의 `applyToRecruit`은 Server Action이라 같은 `updateTag`가 정상 동작하지만, `api/applications/route.ts`는 Route Handler라 100% 재현.
+  - try/catch로 500만 막으면 `updateTag`가 `revalidate()` 호출 전에 throw하기 때문에 **캐시 무효화 자체가 한 번도 실행 안 되는 잠재 버그**가 남음(`_count.applications` 등 `unstable_cache` 필드가 계속 stale) — `revalidateTag(tag, "max")`로 교체해 진짜로 무효화되도록 수정, 방어적으로 try/catch는 유지.
+  - `tsc`/`lint` 통과. 검증 도중 로컬·프로덕션 API가 동시에 500(Supabase pooler 연결 실패)이 떠서 당황했으나, `mcp__Supabase`로 `pg_stat_activity` 직접 조회해 DB 자체는 건강함을 확인(연결 12개뿐, 커넥션 고갈 아님) — 몇 초 후 자연 복구된 일시적 pooler 블립이었고 내 수정과 무관함을 확인 후 재검증.
+  - PR #18 → CI green → main 머지 → Vercel 프로덕션 배포 완료.
+
 **다음에 할 것**
-- 이 fix가 배포되면 모바일 쪽에서 재테스트 필요(지원 완료 상태가 새로고침·재시작에도 유지되는지) — `TeamUp-mobile` 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)도 실기기에서 재현 여부 확인 필요.
+- 두 fix 다 배포됨 — 모바일 쪽에서 재테스트 요청(지원 완료 상태 유지 + 지원 성공 시 500 안 뜨는지), `TeamUp-mobile/docs/testing/1차_report.md` 업데이트 예정.
+- `TeamUp-mobile` 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)는 아직 미해결 — 실기기에서 재현 여부 확인 필요.
 
 ---
 

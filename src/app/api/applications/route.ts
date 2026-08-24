@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { applyToRecruitSchema } from "@/features/recruit/schema";
 import { getUserFromRequest } from "@/server/api-auth";
@@ -46,6 +46,15 @@ export async function POST(request: Request) {
     );
   }
 
-  updateTag(`recruit-${recruitId}`);
+  try {
+    // updateTag는 Server Action 전용 — Route Handler(이 파일)에서 부르면 매번 throw함
+    // (features/recruit/actions.ts의 applyToRecruit은 Server Action이라 updateTag 사용 가능).
+    // "max" 프로필로 즉시 만료시켜 updateTag와 동일한 무효화 효과를 냄.
+    revalidateTag(`recruit-${recruitId}`, "max");
+  } catch (error) {
+    // 그래도 캐시 무효화 실패로 이미 커밋된 지원 생성 응답 자체를 500으로 깨뜨리면 안 됨
+    // (지원은 DB에 이미 저장됐는데 클라이언트엔 실패로 보이는 문제 방지).
+    console.error("Recruit cache invalidation failed after application create:", error);
+  }
   return NextResponse.json({ data: application }, { status: 201 });
 }
