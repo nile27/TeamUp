@@ -102,6 +102,39 @@ const dashboardSchema = registry.register(
   })
 );
 
+const communityPostSchema = registry.register(
+  "CommunityPost",
+  z.object({
+    id: z.string(),
+    title: z.string(),
+    content: z.string(),
+    tag: z.enum(["IDEA", "QUESTION", "ETC"]),
+    viewCount: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    author: z.object({ nickname: z.string() }),
+    _count: z.object({ comments: z.number(), likes: z.number() }),
+  })
+);
+
+const commentSchema = registry.register(
+  "Comment",
+  z.object({
+    id: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+    author: z.object({ nickname: z.string() }),
+  })
+);
+
+const communityPostDetailSchema = registry.register(
+  "CommunityPostDetail",
+  communityPostSchema.extend({
+    comments: z.array(commentSchema),
+    alreadyLiked: z.boolean(),
+  })
+);
+
 function envelope<T extends z.ZodTypeAny>(data: T) {
   return z.object({ data });
 }
@@ -220,6 +253,44 @@ registry.registerPath({
       content: { "application/json": { schema: envelope(dashboardSchema) } },
     },
     401: unauthorized,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/community",
+  summary: "커뮤니티 글 목록",
+  request: {
+    query: z.object({
+      tag: z.enum(["IDEA", "QUESTION", "ETC"]).optional().openapi({ description: "말머리 필터. 잘못된 값은 무시." }),
+      page: z.string().optional().openapi({ description: "페이지 번호(기본 1), 페이지당 10개" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "글 목록",
+      content: {
+        "application/json": {
+          schema: envelope(z.object({ posts: z.array(communityPostSchema), page: z.number(), totalPages: z.number() })),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/community/{id}",
+  summary: "커뮤니티 글 상세",
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "글 상세(댓글 포함)",
+      content: { "application/json": { schema: envelope(communityPostDetailSchema) } },
+    },
+    404: notFound,
   },
 });
 

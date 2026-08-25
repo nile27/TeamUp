@@ -124,9 +124,36 @@ Supabase Auth 회원가입 직후 Prisma `User` 프로필 레코드 생성(없�
 
 ---
 
+## `GET /api/community`
+
+커뮤니티 글 목록. **조회 전용** — 작성/댓글/좋아요는 API로 안 냄(웹 Server Action만, 필요해지면 추후 추가).
+
+**쿼리 파라미터**
+- `tag` (선택): `IDEA` | `QUESTION` | `ETC`. 잘못된 값이면 무시(전체 조회로 동작).
+- `page` (선택, 기본 1): 페이지네이션. 페이지당 10개.
+
+**응답 200**
+```json
+{ "data": { "posts": [ { "id": "...", "title": "...", "tag": "IDEA", "author": { "nickname": "..." }, "_count": { "comments": 0, "likes": 0 }, ... } ], "page": 1, "totalPages": 3 } }
+```
+
+---
+
+## `GET /api/community/[id]`
+
+커뮤니티 글 상세(댓글 포함). `Authorization` 헤더로 로그인 상태면 `alreadyLiked`에 내가 좋아요 눌렀는지 포함(비로그인이면 항상 `false`).
+
+**응답**
+- `200` `{ "data": { ...post, "comments": [...], "alreadyLiked": boolean } }`
+- `404` `{ "error": "글을 찾을 수 없습니다." }`
+
+---
+
 ## 확인 완료 (로컬)
 
 - `GET /api/recruit` → 200, `?stack=` 필터 동작 확인
 - `GET /api/recruit/[존재하지 않는 id]` → 404
+- `GET /api/community`, `?tag=IDEA`, `?tag=`(잘못된 값) → 전부 200
+- `GET /api/community/[id]` → 200(`alreadyLiked` 포함, 비로그인이라 false), `GET /api/community/[존재하지 않는 id]` → 404
 - `POST /api/recruit`, `POST /api/applications`, `GET /api/dashboard` (토큰 없이) → 401
 - `npx tsc --noEmit` 통과
