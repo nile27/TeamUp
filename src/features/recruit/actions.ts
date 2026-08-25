@@ -275,25 +275,28 @@ export async function toggleRecruitBookmark(
     return { error: "로그인이 필요합니다." };
   }
 
-  const existing = await prisma.recruitBookmark.findUnique({
-    where: { userId_recruitId: { userId: user.id, recruitId } },
-  });
+  // 클라이언트(BookmarkButton)가 낙관적 업데이트를 하기 때문에, 여기서 던지는 모든 예외를
+  // {error}로 변환해줘야 함 — 안 그러면 실패해도 낙관적으로 뒤집힌 화면이 롤백 안 되고
+  // 그대로 남아있다가 새로고침해야 진짜 상태(반영 안 됨)가 드러나는 버그가 생김.
+  try {
+    const existing = await prisma.recruitBookmark.findUnique({
+      where: { userId_recruitId: { userId: user.id, recruitId } },
+    });
 
-  if (existing) {
-    await prisma.recruitBookmark.delete({ where: { id: existing.id } });
-  } else {
-    try {
+    if (existing) {
+      await prisma.recruitBookmark.delete({ where: { id: existing.id } });
+    } else {
       await prisma.recruitBookmark.create({ data: { userId: user.id, recruitId } });
-    } catch (error) {
-      console.error("Toggle Bookmark Error:", error);
-      return { error: "저장 처리 중 오류가 발생했습니다." };
     }
-  }
 
-  const count = await prisma.recruitBookmark.count({ where: { recruitId } });
-  // getRecruitById는 ISR 캐시라 저장 개수(_count.bookmarks)가 다음 새로고침에도
-  // 그대로 반영되려면 태그를 무효화해야 함 (지원 처리와 동일한 패턴).
-  updateTag(`recruit-${recruitId}`);
-  revalidatePath("/dashboard");
-  return { bookmarked: !existing, count };
+    const count = await prisma.recruitBookmark.count({ where: { recruitId } });
+    // getRecruitById는 ISR 캐시라 저장 개수(_count.bookmarks)가 다음 새로고침에도
+    // 그대로 반영되려면 태그를 무효화해야 함 (지원 처리와 동일한 패턴).
+    updateTag(`recruit-${recruitId}`);
+    revalidatePath("/dashboard");
+    return { bookmarked: !existing, count };
+  } catch (error) {
+    console.error("Toggle Bookmark Error:", error);
+    return { error: "저장 처리 중 오류가 발생했습니다." };
+  }
 }
