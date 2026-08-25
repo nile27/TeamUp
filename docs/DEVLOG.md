@@ -8,41 +8,51 @@
 
 ---
 
-## 2026-08-24 (월)
-
-**한 일 (추가)**
-- **Supabase 연결 순간 끊김에 대한 재시도 로직 추가** (`src/server/db.ts`). 오늘 하루 동안 여러 번 관찰된 "Can't reach database server" 일시적 실패(Supabase free tier pooler 특성으로 추정 — DB 자체는 매번 건강했음)가 SSR 중 발생하면 페이지 전체가 `error.tsx`로 떨어져서 "사이트가 죽었다"처럼 보이던 문제. Prisma Client Extension(`$extends`)으로 모든 쿼리를 감싸 재시도하도록 수정:
-  - 연결 자체가 안 열린 경우(`PrismaClientInitializationError`, 우리가 겪은 케이스)는 서버에 요청이 안 갔으니 어떤 작업이든 재시도 안전 — 300ms, 800ms 간격으로 최대 2번 재시도.
-  - 연결이 도중에 끊긴 경우(P1001/P1017/P2024 등)는 **읽기 작업만** 재시도(쓰기는 이미 처리됐을 수도 있어 중복 방지 차 재시도 안 함).
-  - `DATABASE_URL`을 일부러 존재하지 않는 주소로 바꾼 격리 스크립트로 재시도 타이밍(300ms→800ms→최종 throw, 총 ~1.6초) 직접 확인, 실제 DB로는 회귀 없음(`tsc`/`lint`/E2E 전체 22개 중 21 passed·1 skipped) 확인.
-- 지원자 수락/거절 캐시 안 지워지던 것(직전 커밋)까지 포함해서, "화면이 실시간으로 안 바뀐다"는 피드백에 대응해 오늘 발견된 캐시/연결 관련 이슈는 이걸로 일단 다 커버.
+## 2026-08-25 (화)
 
 **한 일**
-- **RN 1차 실기기(헤드리스 에뮬레이터) 테스트에서 발견된 버그 수정 + 배포**. 테스트는 `TeamUp-mobile` 쪽에서 진행(리포트: `TeamUp-mobile/docs/testing/1차_report.md`) — 로그인→목록→상세→지원 플로우 자체는 프로덕션 API(`team-up-olive.vercel.app`) 기준으로 정상 동작 확인됐지만, 지원 완료 후에도 상세 화면이 계속 "지원하기"로 보이는 버그 발견.
-  - 원인: 지난 세션에 `GET /api/recruit/[id]`에 `alreadyApplied` 필드를 추가하는 수정을 로컬에서 해뒀는데 **커밋·배포가 안 된 채로 남아있었음** — 모바일이 실제로 호출하는 프로덕션 API는 옛날 응답(필드 자체 없음)을 주고 있었던 것.
-  - `getApplicationForUser` 재사용해 상세 응답에 `alreadyApplied`(로그인 유저의 기존 지원 여부, 비로그인이면 항상 `false`) 포함. `POST /api/applications`도 중복 지원 실패를 Prisma `P2002`로 구분해 "이미 지원한 모집입니다"로 명확히 안내하도록 개선(기존엔 모든 실패가 뭉뚱그려진 메시지).
-  - 로컬 dev 서버에서 `curl`로 `alreadyApplied: false` 응답·401(미인증) 확인, `tsc`/`lint` 통과.
-  - `docs/api-contract.md`에 `alreadyApplied` 필드 반영.
-
-- **`POST /api/applications` 성공해도 500으로 보이는 버그 수정 + 배포**. `TeamUp-mobile`에서 지원하기 후 발견 — DB엔 `Application`이 정상 생성되는데 클라이언트엔 500(빈 응답)으로 보임. 웹 레포 쪽에 로컬로 적용해둔 수정을 리뷰하며 근본 원인까지 추적.
-  - **근본 원인**: `updateTag()`는 Server Action에서만 호출 가능 — Route Handler에서 부르면 Next.js가 무조건 throw함(`node_modules/next/dist/server/web/spec-extension/revalidate.js`에서 직접 확인, `workStore.page.endsWith('/route')`면 즉시 에러). `features/recruit/actions.ts`의 `applyToRecruit`은 Server Action이라 같은 `updateTag`가 정상 동작하지만, `api/applications/route.ts`는 Route Handler라 100% 재현.
-  - try/catch로 500만 막으면 `updateTag`가 `revalidate()` 호출 전에 throw하기 때문에 **캐시 무효화 자체가 한 번도 실행 안 되는 잠재 버그**가 남음(`_count.applications` 등 `unstable_cache` 필드가 계속 stale) — `revalidateTag(tag, "max")`로 교체해 진짜로 무효화되도록 수정, 방어적으로 try/catch는 유지.
-  - `tsc`/`lint` 통과. 검증 도중 로컬·프로덕션 API가 동시에 500(Supabase pooler 연결 실패)이 떠서 당황했으나, `mcp__Supabase`로 `pg_stat_activity` 직접 조회해 DB 자체는 건강함을 확인(연결 12개뿐, 커넥션 고갈 아님) — 몇 초 후 자연 복구된 일시적 pooler 블립이었고 내 수정과 무관함을 확인 후 재검증.
-  - PR #18 → CI green → main 머지 → Vercel 프로덕션 배포 완료.
+- **`DIRECT_URL` 삽질 끝에 원상복구 + `prisma migrate status` 검증 완료**. 어제 "진짜 direct 주소(`db.<ref>.supabase.co`)로 바꿔야 한다"고 안내한 게 틀렸음 — 확인해보니 그 호스트는 **IPv6 전용(A 레코드 없음, AAAA만 있음)**이라 IPv6 없는 네트워크에선 애초에 도달 불가능(Supabase의 알려진 정책, [PGBouncer and IPv4 Deprecation](https://supabase.com/changelog/17817-pgbouncer-and-ipv4-deprecation), [IPv4/IPv6 compatibility 문서](https://supabase.com/docs/guides/troubleshooting/supabase--your-network-ipv4-and-ipv6-compatibility-cHe3BP)). 원래 있던 값(pooler 호스트 + 포트 5432, Session pooler 모드)이 오히려 맞는 값이었음 — 되돌린 뒤 `npx prisma migrate status`로 "Database schema is up to date!" 확인.
+- **좋아요/저장(북마크) 낙관적 업데이트 구현** (`BookmarkButton`/`LikeButton`). 클릭 즉시 state를 뒤집고, 실패 시 롤백하는 방식으로 변경.
+  - 구현 중 진짜 버그 하나 발견: `toggleRecruitBookmark`/`toggleCommunityPostLike`가 `findUnique`/`delete`/`count` 호출엔 try/catch가 없어서(오직 `create`만 감싸져 있었음), 그 부분에서 예외가 나면 Server Action이 통째로 throw하는데 클라이언트 쪽엔 그 reject를 잡는 코드가 없어서 **낙관적으로 뒤집힌 화면이 롤백 안 되고 그대로 남는** 문제가 있었음. 두 액션 전체를 try/catch로 감싸 모든 실패를 `{error}`로 변환, 클라이언트에도 방어적으로 try/catch 추가.
+  - 이 과정에서 기존 E2E(`like-bookmark-viewcount.spec.ts`)가 100% 재현으로 깨짐 — 근데 원인은 코드 버그가 아니라 **테스트 자체의 레이스 컨디션**이었음: 예전엔 텍스트가 서버 왕복이 끝나야 바뀌어서 그 타이밍에 자연스럽게 `page.reload()`가 안전했는데, 낙관적 업데이트로 텍스트가 즉시 바뀌면서 테스트가 실제 서버 응답(캐시 무효화 포함)을 기다리지 않고 바로 `reload()`해버려 레이스가 남. `git stash`로 원본 코드 대조해서 회귀 아님을 먼저 확인한 뒤, 테스트를 `page.waitForResponse(...)`로 실제 네트워크 응답을 기다리도록 수정(UI 텍스트가 아니라 네트워크 완료를 기준으로 삼는 게 맞는 테스트 방식). 4회 연속 통과 확인.
+  - `tsc`/`lint` 통과, E2E 전체(22개 중 21 passed·1 skipped) 재확인.
+  - `CLAUDE.md`/`AGENTS.md` "나중에 추가" 백로그에서 항목 제거(완료 처리).
+- **`GET /api/community`·`GET /api/community/[id]` 신설**. 리뷰 중 발견 — REST API에 커뮤니티가 아예 없었음(RN 파일럿 스코프에서 원래 제외였음). 웹에서 쓰는 조회 기능은 다 API로도 내놓기로 결정, **작성/댓글/좋아요 등 쓰기는 이번엔 제외**(조회 전용). `features/community/queries.ts`(`getCommunityPosts`/`getCommunityPostById`/`getLikeForUser`) 재사용해 라우트는 얇게. 목록은 `?tag=`(말머리 필터, 잘못된 값은 무시)·`?page=` 지원, 상세는 로그인 시 `alreadyLiked` 포함(모집 `alreadyApplied`와 동일 패턴). `docs/api-contract.md`·`src/server/openapi/registry.ts`(대화형 문서) 둘 다 반영. `curl`로 200/404 확인, `tsc`/`lint` 통과.
 
 **다음에 할 것**
-- 두 fix 다 배포됨 — 모바일 쪽에서 재테스트 요청(지원 완료 상태 유지 + 지원 성공 시 500 안 뜨는지), `TeamUp-mobile/docs/testing/1차_report.md` 업데이트 예정.
-- `TeamUp-mobile` 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)는 아직 미해결 — 실기기에서 재현 여부 확인 필요.
+- 오늘 변경 전부 아직 커밋 전 — 사용자가 "메인에 배포해줘"처럼 명시적으로 요청할 때만 커밋/push/배포 진행(어제 정한 규칙).
+- 웹에서 모바일발 지원 확인 크로스체크(지원자 관리 화면 → 수락/거절 → 모바일 반영)는 아직 안 함.
+- `connection_limit=1` 등 env 변경 효과는 사용자가 아직 특이사항 없다고 확인(관찰 계속).
+- 커뮤니티 작성/댓글/좋아요 쓰기 API는 필요해지면 추가(지금은 조회만).
 
-- **`recruit/[id]`·`community/[id]`의 `notFound()`가 HTTP 200을 반환하는 문제 — 원인 규명, 안 고치기로 결정**. 배포 후 전체 스모크 테스트하다가 발견: 커스텀 404 UI는 정상 렌더되는데 상태 코드만 200. 최소 재현(빈 페이지 + `notFound()` 하나)까지 좁혀서 확인한 결과 **Next.js 자체의 알려진 버그**(`loading.tsx`가 있는 라우트는 스트리밍 응답이라 body를 보내기 전에 이미 200 헤더를 먼저 흘려보내서, 이후 `notFound()`가 호출돼도 상태 코드를 못 바꿈 — [vercel/next.js#63478](https://github.com/vercel/next.js/issues/63478), [#76474](https://github.com/vercel/next.js/issues/76474), [#64446](https://github.com/vercel/next.js/issues/64446)). Turbopack/webpack 둘 다 재현, `force-dynamic` 옵션도 안 먹힘 — App Router 안에서 깔끔한 우회법 자체가 없는 것으로 확인.
-  - `recruit/[id]/loading.tsx`·`community/[id]/loading.tsx`는 이번 세션 전부터 있던 것이라 원래 있던 버그. 이번에 추가한 전역 `src/app/loading.tsx`가 사정거리를 넓히긴 했지만(앞으로 `notFound()` 쓰는 새 페이지가 생기면 자동으로 영향받음), 지금 당장 `notFound()`를 쓰는 곳은 이 두 라우트뿐이라 실질 영향 없음.
-  - 고칠 방법은 있음(예: 존재 여부 체크를 `layout.tsx`로 옮겨 Suspense 경계 밖에서 판단) — 화면엔 올바른 404 UI가 뜨니 실사용자는 못 느끼는 문제라 **사용자 판단으로 지금은 손 안 대기로 결정**. 나중에 SEO나 헬스체크가 상태 코드에 의존하게 되면 재검토.
+---
 
-- **지원자 수락/거절 버튼이 눌러도 반응 없다가 다른 페이지 갔다 오면 반영되는 문제 수정**. 증상 보고: "버튼 눌러도 이벤트가 동작 안 함, 콘솔 에러도 없음" → 실제론 DB는 즉시 갱신되고 있었고(사용자가 다른 작업 하다 다시 들어가니 반영된 걸 확인), 문제는 **클라이언트 라우터 캐시가 안 갱신되는 것**이었음.
-  - 원인: `updateApplicationStatus` Server Action이 `revalidatePath` 직후 **폼을 제출한 바로 그 페이지(`/recruit/[id]/applicants`)로 다시 `redirect()`** 하고 있었음 — Next.js에 "Server Action이 revalidate 후 redirect하면 클라이언트 라우터 캐시가 안 지워진다"는 알려진 이슈가 있음([vercel/next.js#49450](https://github.com/vercel/next.js/issues/49450), 관련 수정 PR [#70715](https://github.com/vercel/next.js/pull/70715)). 이미 있는 페이지로 다시 redirect할 이유가 없어서, `redirect()` 호출을 제거 — Server Action이 redirect 없이 끝나면 Next가 알아서 현재 라우트를 새로고침함.
-  - `npx tsc --noEmit`·`lint` 통과, 관련 E2E(`recruit-applicant-management.spec.ts`) 재실행해 정상 통과 확인.
+## 2026-08-24 (월)
 
-- **간헐적으로 뜨는 "데이터를 불러오는 중 오류가 발생했습니다"(React 에러 #441) 문의 확인**. React #441은 "Server Components 렌더링 중 에러(프로덕션에선 메시지 생략)"라는 범용 에러라 클라이언트 콘솔만으로는 원인이 안 보임 — 오늘 검증 중 두 번 관찰했던 **Supabase pooler 일시적 연결 끊김**(원인 불명, DB 자체는 건강, 재시도하면 바로 복구)과 정황이 일치(간헐적·재현 안 됨·에러 상세 없음). 코드 버그로 보긴 어렵고, `error.tsx`의 "다시 시도" 버튼이 의도대로 동작하는 상황으로 판단. 재현 빈도가 늘면 Vercel 함수 로그로 digest 대조해 확인 필요.
+**한 일**
+1. **RN 1차 실기기 테스트에서 발견된 버그 2개 수정 + 배포** (테스트는 `TeamUp-mobile` 쪽, 리포트: `TeamUp-mobile/docs/testing/1차_report.md`).
+   - `GET /api/recruit/[id]`에 `alreadyApplied` 필드 추가 — 지난 세션에 로컬에서만 고쳐두고 커밋·배포를 안 해서, 모바일이 지원 완료해도 계속 "지원하기"로 보이던 버그. `POST /api/applications` 중복 지원도 Prisma `P2002`로 구분해 "이미 지원한 모집입니다"로 명확히 안내.
+   - `POST /api/applications`가 성공해도 500(빈 응답)으로 보이는 버그 — 근본 원인은 `updateTag()`가 Server Action 전용 API인데 Route Handler에서 불러서 매번 throw(`node_modules/next/dist/server/web/spec-extension/revalidate.js`에서 확인). `revalidateTag(tag, "max")`로 교체.
+2. **`/api-doc`·`/api/openapi.json` 프로덕션 노출 여부 점검** — 이미 가드돼 있었음, `npm run build && npm run start`로 로컬 재현해 실제 404 확인.
+3. **전역 404/에러/로딩 폴백 4종** (`not-found.tsx`/`error.tsx`/`global-error.tsx`/`loading.tsx`) 신설 — 라우트별 처리가 없던 경로 보완.
+4. **`recruit/[id]`·`community/[id]`의 `notFound()`가 HTTP 200을 반환하는 문제 — 원인 규명, 손 안 대기로 결정**. Next.js 자체의 알려진 버그: `loading.tsx`가 있는 라우트는 스트리밍이라 body 보내기 전에 이미 200 헤더를 흘려보내서, 이후 `notFound()`가 호출돼도 상태 코드를 못 바꿈([vercel/next.js#63478](https://github.com/vercel/next.js/issues/63478), [#76474](https://github.com/vercel/next.js/issues/76474), [#64446](https://github.com/vercel/next.js/issues/64446)). Turbopack/webpack 둘 다 재현, `force-dynamic`도 안 먹힘. 화면엔 올바른 404 UI가 뜨니 실사용자는 못 느끼는 문제 — SEO/헬스체크가 상태 코드에 의존하게 되면 재검토.
+5. **지원자 수락/거절 버튼 눌러도 반응 없다가 다른 페이지 갔다 오면 반영되는 문제 수정**. DB는 즉시 갱신되는데 클라이언트 라우터 캐시가 안 갱신되던 것 — `updateApplicationStatus`가 `revalidatePath` 직후 **같은 페이지로 다시 `redirect()`** 하던 게 원인(Next.js 알려진 이슈: [vercel/next.js#49450](https://github.com/vercel/next.js/issues/49450), 수정 PR [#70715](https://github.com/vercel/next.js/pull/70715)). 불필요한 자기 자신 redirect 제거.
+6. **Supabase 연결 순간 끊김("Can't reach database server")에 대한 재시도 로직 추가** (`src/server/db.ts`). SSR 중 발생하면 페이지 전체가 `error.tsx`로 떨어져 "사이트가 죽었다"처럼 보이던 문제 — Prisma Client Extension으로 모든 쿼리를 감싸 재시도. 연결 자체가 안 열린 경우(`PrismaClientInitializationError`)는 모든 작업, 도중에 끊긴 경우(P1001/P1017/P2024)는 읽기만(부수효과 안전) 300ms→800ms 간격 최대 2회. 일부러 끊어진 `DATABASE_URL`로 재시도 타이밍 확인, 실제 DB로 회귀 없음(E2E 21 passed·1 skipped).
+7. **간헐적 React 에러 #441 문의 확인** — "Server Components 렌더링 중 에러(프로덕션은 메시지 생략)"라는 범용 에러라 콘솔만으론 원인 특정 안 됨. 위 6번의 Supabase pooler 블립과 정황 일치(간헐적·재현 안 됨·상세 없음) — 코드 버그로 보기 어려움, `error.tsx`가 의도대로 동작한 것으로 판단.
+8. **(사용자 직접 적용) Supabase 연결 안정화 env 3종** — Perplexity·웹 검색으로 Supabase 공식 트러블슈팅 문서 기준 확인 후 사용자가 직접 반영(코드 아니라 env라 Claude가 직접 못 건드림):
+   - `DATABASE_URL`에 `connection_limit=1&connect_timeout=30&pool_timeout=20` 추가.
+   - `DIRECT_URL`을 pooler 경유 주소에서 진짜 direct 주소(`db.<ref>.supabase.co:5432`)로 교체.
+   - 적용 후 체감 속도 변화는 있었으나 로컬 네트워크(유튜브 스트리밍 등) 영향과 뒤섞여 판단 애매 — 서버 쪽에서 직접 측정(`curl`, 사용자 네트워크와 무관)해보니 `connection_limit=1`이 동시 쿼리(`Promise.all`) 페이지를 느리게 만드는 증거는 없었음(오히려 쿼리 3개짜리 페이지가 1개짜리보다 더 빠르고 일관적). 가끔 튀는 지연은 여전한 pooler 블립으로 추정, 재시도 로직이 완전 실패를 "몇 초 느림"으로 흡수 중.
+9. 세션 중 사용자가 지적: 지난 몇 차례 fix를 "이전 승인이 이후 것까지 커버한다"고 잘못 판단해 커밋/push/PR/머지/배포를 매번 자동으로 진행함 — `CLAUDE.md` 규칙 위반. **이후로는 코드 변경 후 커밋 메시지만 제안하고, "메인에 배포해줘"처럼 명시적으로 요청할 때만 진행하기로 함**(메모리에 기록: `feedback_commit_push_permission`).
+
+**다음에 할 것**
+- **모바일 쪽 재테스트** — 오늘 배포한 fix들(지원 완료 상태 유지, 지원 성공 시 500 안 뜸, 수락/거절 즉시 반영)이 실기기에서도 되는지 확인, `TeamUp-mobile/docs/testing/2차_알파테스트_체크리스트.md` 진행 후 결과 기록.
+- `TeamUp-mobile` 1차 리포트의 버그 2(간헐적 "지원 처리 중 오류" 메시지, 원인 미확정)는 아직 미해결.
+- **`connection_limit=1` 등 env 변경 효과 며칠 지켜보기** — 지금까지 측정으론 문제없었지만 통계적으로 판단할 사안이라 계속 관찰. 마이페이지 등 체감 느림 반복되면 `connection_limit` 숫자 조정 검토.
+- **`DIRECT_URL` 교체 후 실제 `prisma migrate` 한 번도 안 해봄** — 다음에 스키마 변경 있을 때 정상 동작하는지 확인 필요(pooler 안 거치는 진짜 direct 주소로 바뀐 거라 이론상 문제없어야 함).
+- 여유 되면: React Native Reusables 도입 검토, Jest+Maestro 테스트, EAS internal 빌드로 실기기 시연(RN 파일럿 Tier 1).
+- 좋아요/저장(북마크) 낙관적 업데이트 — 기존 백로그, 아직 미착수(`CLAUDE.md`/`AGENTS.md` "나중에 추가" 참고).
+- `TeamUp-mobile/`은 아직 커밋 전 — 사용자가 나중에 진행하기로 함.
 
 ---
 
