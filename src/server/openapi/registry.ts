@@ -5,6 +5,7 @@ import {
   applyToRecruitSchema,
 } from "@/features/recruit/schema";
 import { ensureProfileSchema } from "@/features/auth/schema";
+import { createCommentSchema } from "@/features/community/schema";
 
 // z.object() 인스턴스에 .openapi()를 붙일 수 있게 zod 프로토타입 확장.
 // 요청 스키마는 features/*/schema.ts의 기존 zod를 그대로 재사용 — 여기서 다시 정의하지 않음.
@@ -291,6 +292,44 @@ registry.registerPath({
       content: { "application/json": { schema: envelope(communityPostDetailSchema) } },
     },
     404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/community/{id}/like",
+  summary: "커뮤니티 글 좋아요 토글",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "토글 결과",
+      content: {
+        "application/json": { schema: envelope(z.object({ liked: z.boolean(), count: z.number() })) },
+      },
+    },
+    401: unauthorized,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/community/{id}/comments",
+  summary: "댓글 작성",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+    body: { content: { "application/json": { schema: createCommentSchema } } },
+  },
+  responses: {
+    201: {
+      description: "작성됨",
+      content: { "application/json": { schema: envelope(commentSchema) } },
+    },
+    400: badRequest,
+    401: unauthorized,
   },
 });
 

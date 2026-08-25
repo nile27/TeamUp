@@ -17,13 +17,15 @@
   - 이 과정에서 기존 E2E(`like-bookmark-viewcount.spec.ts`)가 100% 재현으로 깨짐 — 근데 원인은 코드 버그가 아니라 **테스트 자체의 레이스 컨디션**이었음: 예전엔 텍스트가 서버 왕복이 끝나야 바뀌어서 그 타이밍에 자연스럽게 `page.reload()`가 안전했는데, 낙관적 업데이트로 텍스트가 즉시 바뀌면서 테스트가 실제 서버 응답(캐시 무효화 포함)을 기다리지 않고 바로 `reload()`해버려 레이스가 남. `git stash`로 원본 코드 대조해서 회귀 아님을 먼저 확인한 뒤, 테스트를 `page.waitForResponse(...)`로 실제 네트워크 응답을 기다리도록 수정(UI 텍스트가 아니라 네트워크 완료를 기준으로 삼는 게 맞는 테스트 방식). 4회 연속 통과 확인.
   - `tsc`/`lint` 통과, E2E 전체(22개 중 21 passed·1 skipped) 재확인.
   - `CLAUDE.md`/`AGENTS.md` "나중에 추가" 백로그에서 항목 제거(완료 처리).
-- **`GET /api/community`·`GET /api/community/[id]` 신설**. 리뷰 중 발견 — REST API에 커뮤니티가 아예 없었음(RN 파일럿 스코프에서 원래 제외였음). 웹에서 쓰는 조회 기능은 다 API로도 내놓기로 결정, **작성/댓글/좋아요 등 쓰기는 이번엔 제외**(조회 전용). `features/community/queries.ts`(`getCommunityPosts`/`getCommunityPostById`/`getLikeForUser`) 재사용해 라우트는 얇게. 목록은 `?tag=`(말머리 필터, 잘못된 값은 무시)·`?page=` 지원, 상세는 로그인 시 `alreadyLiked` 포함(모집 `alreadyApplied`와 동일 패턴). `docs/api-contract.md`·`src/server/openapi/registry.ts`(대화형 문서) 둘 다 반영. `curl`로 200/404 확인, `tsc`/`lint` 통과.
+- **`GET /api/community`·`GET /api/community/[id]` 신설**. 리뷰 중 발견 — REST API에 커뮤니티가 아예 없었음(RN 파일럿 스코프에서 원래 제외였음). 웹에서 쓰는 조회 기능은 다 API로도 내놓기로 결정. `features/community/queries.ts`(`getCommunityPosts`/`getCommunityPostById`/`getLikeForUser`) 재사용해 라우트는 얇게. 목록은 `?tag=`(말머리 필터, 잘못된 값은 무시)·`?page=` 지원, 상세는 로그인 시 `alreadyLiked` 포함(모집 `alreadyApplied`와 동일 패턴).
+- **커밋 4개 진행**(사용자 명시적 요청) → 이어서 **`POST /api/community/[id]/like`·`POST /api/community/[id]/comments` 추가**. 처음엔 "쓰기는 전부 제외"로 잘못 스코프 잡았었는데, **글 작성만 빼고 좋아요·댓글은 API로 지원하기로 정정**. `getUserFromRequest` + Prisma 직접 호출 패턴(다른 API 라우트와 동일), `createCommentSchema` 재사용.
+  - 실제 테스트 계정으로 토큰 발급해(Supabase Auth 직접 호출) 전체 흐름 검증: 좋아요 토글 on/off 카운트 정상, 댓글 작성 201, 빈 댓글 400, 둘 다 미인증 401, 상세 재조회로 `alreadyLiked`·댓글 반영 확인. 테스트 계정·댓글은 확인 후 정리(Prisma cascade로 댓글도 같이 삭제됨).
+  - `docs/api-contract.md`·`src/server/openapi/registry.ts` 반영, `/api/openapi.json`에 9개 경로 전부 확인. `tsc`/`lint` 통과.
 
 **다음에 할 것**
-- 오늘 변경 전부 아직 커밋 전 — 사용자가 "메인에 배포해줘"처럼 명시적으로 요청할 때만 커밋/push/배포 진행(어제 정한 규칙).
+- 오늘 변경(커뮤니티 좋아요/댓글 API) 아직 커밋 전 — 사용자가 명시적으로 요청할 때만 커밋/push/배포 진행.
 - 웹에서 모바일발 지원 확인 크로스체크(지원자 관리 화면 → 수락/거절 → 모바일 반영)는 아직 안 함.
 - `connection_limit=1` 등 env 변경 효과는 사용자가 아직 특이사항 없다고 확인(관찰 계속).
-- 커뮤니티 작성/댓글/좋아요 쓰기 API는 필요해지면 추가(지금은 조회만).
 
 ---
 

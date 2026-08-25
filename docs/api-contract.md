@@ -126,7 +126,7 @@ Supabase Auth 회원가입 직후 Prisma `User` 프로필 레코드 생성(없�
 
 ## `GET /api/community`
 
-커뮤니티 글 목록. **조회 전용** — 작성/댓글/좋아요는 API로 안 냄(웹 Server Action만, 필요해지면 추후 추가).
+커뮤니티 글 목록. **글 작성만 API로 안 냄**(웹 Server Action 전용) — 좋아요·댓글은 아래처럼 API로 지원.
 
 **쿼리 파라미터**
 - `tag` (선택): `IDEA` | `QUESTION` | `ETC`. 잘못된 값이면 무시(전체 조회로 동작).
@@ -149,6 +149,34 @@ Supabase Auth 회원가입 직후 Prisma `User` 프로필 레코드 생성(없�
 
 ---
 
+## `POST /api/community/[id]/like`
+
+좋아요 토글. **인증 필요.**
+
+**요청 바디**: 없음.
+
+**응답**
+- `200` `{ "data": { "liked": boolean, "count": number } }`
+- `401` 미인증
+
+---
+
+## `POST /api/community/[id]/comments`
+
+댓글 작성. **인증 필요.**
+
+**요청 바디**
+```json
+{ "content": "댓글 내용 (1자 이상)" }
+```
+
+**응답**
+- `201` `{ "data": <comment> }` (`author.nickname` 포함)
+- `400` 검증 실패
+- `401` 미인증
+
+---
+
 ## 확인 완료 (로컬)
 
 - `GET /api/recruit` → 200, `?stack=` 필터 동작 확인
@@ -156,4 +184,5 @@ Supabase Auth 회원가입 직후 Prisma `User` 프로필 레코드 생성(없�
 - `GET /api/community`, `?tag=IDEA`, `?tag=`(잘못된 값) → 전부 200
 - `GET /api/community/[id]` → 200(`alreadyLiked` 포함, 비로그인이라 false), `GET /api/community/[존재하지 않는 id]` → 404
 - `POST /api/recruit`, `POST /api/applications`, `GET /api/dashboard` (토큰 없이) → 401
+- `POST /api/community/[id]/like`, `POST /api/community/[id]/comments` — 실제 테스트 계정으로 토큰 발급해 전체 흐름 확인: 좋아요 토글 200(on/off 카운트 정상), 댓글 작성 201(`author.nickname` 포함), 빈 댓글 400(`fieldErrors`), 둘 다 미인증 401. 상세 재조회로 `alreadyLiked`·댓글 반영 확인. 테스트 계정·댓글은 사용 후 정리.
 - `npx tsc --noEmit` 통과
