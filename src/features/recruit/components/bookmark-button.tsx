@@ -29,14 +29,30 @@ export function BookmarkButton({ recruitId, isLoggedIn, initialBookmarked, initi
   }
 
   const onClick = () => {
+    const prevBookmarked = bookmarked;
+    const prevCount = count;
+    // 낙관적 업데이트 — 서버 응답 기다리지 않고 클릭 즉시 반영, 실패하면 롤백.
+    setBookmarked(!prevBookmarked);
+    setCount(prevCount + (prevBookmarked ? -1 : 1));
+
     startTransition(async () => {
-      const result = await toggleRecruitBookmark(recruitId);
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
+      try {
+        const result = await toggleRecruitBookmark(recruitId);
+        if ("error" in result) {
+          setBookmarked(prevBookmarked);
+          setCount(prevCount);
+          toast.error(result.error);
+          return;
+        }
+        setBookmarked(result.bookmarked);
+        setCount(result.count);
+      } catch {
+        // Server Action 호출 자체가 실패한 경우(네트워크 등) — actions.ts는 내부 예외를
+        // {error}로 변환하지만, 혹시 모를 프레임워크 레벨 실패까지 대비해 여기서도 롤백.
+        setBookmarked(prevBookmarked);
+        setCount(prevCount);
+        toast.error("저장 처리 중 오류가 발생했습니다.");
       }
-      setBookmarked(result.bookmarked);
-      setCount(result.count);
     });
   };
 

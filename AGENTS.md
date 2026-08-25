@@ -39,7 +39,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 > 기능은 있으나 후순위로 미뤄둔 것. 까먹지 않게 여기 모아둠.
 
-- **좋아요/저장(북마크) 토글 낙관적 업데이트** — `BookmarkButton`(`features/recruit`)·`LikeButton`(`features/community`)이 `await toggleXxx()` 서버 왕복이 끝난 뒤에야 `bookmarked`/`liked`·`count` state를 갱신함(`useTransition`으로 pending 처리만, 클릭 즉시 UI는 안 바뀜). 체감 지연 있음 — 클릭 시 먼저 낙관적으로 state를 뒤집고, 서버 에러 시 롤백하는 방식으로 개선 필요.
+(현재 없음 — 좋아요/저장 낙관적 업데이트는 2026-08-25 완료, `docs/DEVLOG.md` 참고)
 
 ---
 

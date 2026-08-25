@@ -5,6 +5,7 @@ import {
   applyToRecruitSchema,
 } from "@/features/recruit/schema";
 import { ensureProfileSchema } from "@/features/auth/schema";
+import { createCommentSchema } from "@/features/community/schema";
 
 // z.object() 인스턴스에 .openapi()를 붙일 수 있게 zod 프로토타입 확장.
 // 요청 스키마는 features/*/schema.ts의 기존 zod를 그대로 재사용 — 여기서 다시 정의하지 않음.
@@ -99,6 +100,39 @@ const dashboardSchema = registry.register(
         recruit: z.object({ id: z.string(), title: z.string(), type: z.enum(["DEV", "PLAN"]) }),
       })
     ),
+  })
+);
+
+const communityPostSchema = registry.register(
+  "CommunityPost",
+  z.object({
+    id: z.string(),
+    title: z.string(),
+    content: z.string(),
+    tag: z.enum(["IDEA", "QUESTION", "ETC"]),
+    viewCount: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    author: z.object({ nickname: z.string() }),
+    _count: z.object({ comments: z.number(), likes: z.number() }),
+  })
+);
+
+const commentSchema = registry.register(
+  "Comment",
+  z.object({
+    id: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+    author: z.object({ nickname: z.string() }),
+  })
+);
+
+const communityPostDetailSchema = registry.register(
+  "CommunityPostDetail",
+  communityPostSchema.extend({
+    comments: z.array(commentSchema),
+    alreadyLiked: z.boolean(),
   })
 );
 
@@ -219,6 +253,82 @@ registry.registerPath({
       description: "대시보드 데이터",
       content: { "application/json": { schema: envelope(dashboardSchema) } },
     },
+    401: unauthorized,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/community",
+  summary: "커뮤니티 글 목록",
+  request: {
+    query: z.object({
+      tag: z.enum(["IDEA", "QUESTION", "ETC"]).optional().openapi({ description: "말머리 필터. 잘못된 값은 무시." }),
+      page: z.string().optional().openapi({ description: "페이지 번호(기본 1), 페이지당 10개" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "글 목록",
+      content: {
+        "application/json": {
+          schema: envelope(z.object({ posts: z.array(communityPostSchema), page: z.number(), totalPages: z.number() })),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/community/{id}",
+  summary: "커뮤니티 글 상세",
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "글 상세(댓글 포함)",
+      content: { "application/json": { schema: envelope(communityPostDetailSchema) } },
+    },
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/community/{id}/like",
+  summary: "커뮤니티 글 좋아요 토글",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "토글 결과",
+      content: {
+        "application/json": { schema: envelope(z.object({ liked: z.boolean(), count: z.number() })) },
+      },
+    },
+    401: unauthorized,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/community/{id}/comments",
+  summary: "댓글 작성",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+    body: { content: { "application/json": { schema: createCommentSchema } } },
+  },
+  responses: {
+    201: {
+      description: "작성됨",
+      content: { "application/json": { schema: envelope(commentSchema) } },
+    },
+    400: badRequest,
     401: unauthorized,
   },
 });

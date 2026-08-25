@@ -22,10 +22,15 @@ test("모집 저장(북마크)·조회수, 커뮤니티 좋아요·조회수가 
   });
   const recruitUrl = page.url();
 
-  // 저장 토글
+  // 저장 토글 — BookmarkButton은 낙관적 업데이트라 클릭 즉시 텍스트가 바뀜(서버 확정 전).
+  // 새로고침 전에 실제 서버 왕복(Server Action POST)이 끝났는지 네트워크로 직접 확인해야
+  // 함 — 안 그러면 UI 텍스트만 보고 reload했다가 아직 안 끝난 요청이 취소되는 레이스가 생김.
   const bookmarkBtn = page.getByRole("button", { name: /저장/ });
   await expect(bookmarkBtn).toHaveText("저장 (0)");
-  await bookmarkBtn.click();
+  await Promise.all([
+    page.waitForResponse((res) => res.url() === recruitUrl && res.request().method() === "POST"),
+    bookmarkBtn.click(),
+  ]);
   await expect(bookmarkBtn).toHaveText("저장됨 (1)", { timeout: 10_000 });
   await page.reload();
   await expect(page.getByRole("button", { name: /저장/ })).toHaveText("저장됨 (1)", { timeout: 10_000 });
@@ -44,10 +49,15 @@ test("모집 저장(북마크)·조회수, 커뮤니티 좋아요·조회수가 
   await page.waitForURL((url) => url.pathname.startsWith("/community/") && url.pathname !== "/community/new", {
     timeout: 20_000,
   });
+  const postUrl = page.url();
 
+  // LikeButton도 낙관적 업데이트라 위 저장 토글과 같은 이유로 네트워크 응답을 직접 기다림.
   const likeBtn = page.getByRole("button", { name: /좋아요/ });
   await expect(likeBtn).toHaveText("좋아요 (0)");
-  await likeBtn.click();
+  await Promise.all([
+    page.waitForResponse((res) => res.url() === postUrl && res.request().method() === "POST"),
+    likeBtn.click(),
+  ]);
   await expect(likeBtn).toHaveText("좋아요 취소 (1)", { timeout: 10_000 });
   await page.reload();
   await expect(page.getByRole("button", { name: /좋아요/ })).toHaveText("좋아요 취소 (1)", { timeout: 10_000 });
