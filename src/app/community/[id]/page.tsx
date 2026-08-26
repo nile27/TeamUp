@@ -40,31 +40,33 @@ export default async function CommunityDetailPage({
   return (
     <AppShell>
       <div className="container mx-auto max-w-2xl px-4 py-8">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div className="space-y-2">
+        {/* 태그·버튼을 같은 줄에 두고 제목은 독립된 줄로 분리 — 좋아요 버튼 텍스트 길이가
+            바뀌어도(좋아요 ↔ 좋아요 취소) 제목 줄바꿈에는 영향이 없도록 함. */}
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center justify-between gap-4">
             <Badge variant="outline">{COMMUNITY_TAG_LABEL[post.tag]}</Badge>
-            <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
-              <span data-testid="post-view-count" className="inline-flex items-center gap-1 ml-1">
-                <Eye className="h-3.5 w-3.5" />
-                {viewCount}
-              </span>
-            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              {isAuthor && (
+                <Button render={<Link href={`/community/${post.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                  수정
+                </Button>
+              )}
+              <LikeButton
+                postId={post.id}
+                isLoggedIn={!!user}
+                initialLiked={!!like}
+                initialCount={post._count.likes}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isAuthor && (
-              <Button render={<Link href={`/community/${post.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
-                수정
-              </Button>
-            )}
-            <LikeButton
-              postId={post.id}
-              isLoggedIn={!!user}
-              initialLiked={!!like}
-              initialCount={post._count.likes}
-            />
-          </div>
+          <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
+            <span data-testid="post-view-count" className="inline-flex items-center gap-1 ml-1">
+              <Eye className="h-3.5 w-3.5" />
+              {viewCount}
+            </span>
+          </p>
         </div>
 
         {typeof promoteError === "string" && (

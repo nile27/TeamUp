@@ -50,8 +50,10 @@ export default async function RecruitDetailPage({
       {/* 짧은 글에서도 ApplyBar가 뷰포트 하단에 붙도록(중간에 붕 뜨지 않게) 최소 높이 확보 */}
       <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
         <div className="container mx-auto max-w-4xl px-4 py-8 pb-4 flex-1">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="space-y-2">
+        {/* 태그·버튼을 같은 줄에 두고 제목은 독립된 줄로 분리 — 저장 버튼 텍스트 길이가
+            바뀌어도(저장 ↔ 저장됨) 제목 줄바꿈에는 영향이 없도록 함. */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{RECRUIT_TYPE_LABEL[recruit.type]}</Badge>
               {recruit.status !== "OPEN" && (
@@ -60,28 +62,28 @@ export default async function RecruitDetailPage({
                 </Badge>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-foreground">{recruit.title}</h1>
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              {recruit.author.nickname} · {new Date(recruit.createdAt).toLocaleDateString("ko-KR")}
-              <span data-testid="recruit-view-count" className="inline-flex items-center gap-1 ml-1">
-                <Eye className="h-3.5 w-3.5" />
-                {viewCount}
-              </span>
-            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              {user?.id === recruit.authorId && (
+                <Button render={<Link href={`/recruit/${recruit.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                  수정
+                </Button>
+              )}
+              <BookmarkButton
+                recruitId={recruit.id}
+                isLoggedIn={!!user}
+                initialBookmarked={!!bookmark}
+                initialCount={recruit._count.bookmarks}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {user?.id === recruit.authorId && (
-              <Button render={<Link href={`/recruit/${recruit.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
-                수정
-              </Button>
-            )}
-            <BookmarkButton
-              recruitId={recruit.id}
-              isLoggedIn={!!user}
-              initialBookmarked={!!bookmark}
-              initialCount={recruit._count.bookmarks}
-            />
-          </div>
+          <h1 className="text-2xl font-bold text-foreground">{recruit.title}</h1>
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            {recruit.author.nickname} · {new Date(recruit.createdAt).toLocaleDateString("ko-KR")}
+            <span data-testid="recruit-view-count" className="inline-flex items-center gap-1 ml-1">
+              <Eye className="h-3.5 w-3.5" />
+              {viewCount}
+            </span>
+          </p>
         </div>
 
         <TechStackTags tags={recruit.techStack} maxDisplay={recruit.techStack.length} />
