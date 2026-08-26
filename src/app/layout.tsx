@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TeamUp — 사이드프로젝트 팀원 매칭",
   description: "개발 못 해도 기획자로 참여하세요. 아이디어와 실행을 잇는 팀원 매칭 플랫폼.",
+};
+
+// 라이트 전용 디자인 — OS/브라우저 다크모드에서 자동 색 반전(force-dark)이 걸리지 않도록 명시.
+export const viewport: Viewport = {
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
