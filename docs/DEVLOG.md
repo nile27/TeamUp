@@ -21,11 +21,15 @@
 - **커밋 4개 진행**(사용자 명시적 요청) → 이어서 **`POST /api/community/[id]/like`·`POST /api/community/[id]/comments` 추가**. 처음엔 "쓰기는 전부 제외"로 잘못 스코프 잡았었는데, **글 작성만 빼고 좋아요·댓글은 API로 지원하기로 정정**. `getUserFromRequest` + Prisma 직접 호출 패턴(다른 API 라우트와 동일), `createCommentSchema` 재사용.
   - 실제 테스트 계정으로 토큰 발급해(Supabase Auth 직접 호출) 전체 흐름 검증: 좋아요 토글 on/off 카운트 정상, 댓글 작성 201, 빈 댓글 400, 둘 다 미인증 401, 상세 재조회로 `alreadyLiked`·댓글 반영 확인. 테스트 계정·댓글은 확인 후 정리(Prisma cascade로 댓글도 같이 삭제됨).
   - `docs/api-contract.md`·`src/server/openapi/registry.ts` 반영, `/api/openapi.json`에 9개 경로 전부 확인. `tsc`/`lint` 통과.
+- **커밋 5개(위 작업들) → PR #21 → CI green(Lint & Typecheck, Vercel, CodeRabbit 전부 pass) → main 머지 → 프로덕션 배포 완료.** 배포 후 `GET /api/community`·`GET /api/community/[id]`·`POST .../like`·`POST .../comments` 프로덕션에서 직접 curl로 재확인(목록·상세 200, 좋아요·댓글 미인증 401) — 전부 라이브.
+
+- **지원자 수락/거절 실시간 반영 재확인** — 사용자가 직접 확인, 정상 동작(어제 `redirect()` 제거 fix가 실제로 잘 먹힘).
 
 **다음에 할 것**
-- 오늘 변경(커뮤니티 좋아요/댓글 API) 아직 커밋 전 — 사용자가 명시적으로 요청할 때만 커밋/push/배포 진행.
-- 웹에서 모바일발 지원 확인 크로스체크(지원자 관리 화면 → 수락/거절 → 모바일 반영)는 아직 안 함.
 - `connection_limit=1` 등 env 변경 효과는 사용자가 아직 특이사항 없다고 확인(관찰 계속).
+- 모집/커뮤니티 글 **수정** API는 아직 없음(생성·조회·좋아요·댓글은 다 있음) — 필요해지면 추가.
+- 알파테스트 체크리스트(`TeamUp-mobile/docs/testing/2차_알파테스트_체크리스트.md`) 미완료 항목들 — EAS internal 빌드, 회원가입 검증 에러 케이스 등.
+- 모바일 쪽에서 방금 배포된 커뮤니티 API(좋아요/댓글) 실제로 붙여서 써보는 것 — `TeamUp-mobile/src/config/labels.ts`에 커뮤니티 태그 라벨이 이미 복붙돼있는 걸 보면 모바일 커뮤니티 화면이 진행 중인 듯.
 
 ---
 
