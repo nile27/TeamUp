@@ -30,7 +30,7 @@ TeamUp 프로젝트에서 코드를 작성할 때 반드시 따라야 할 핵심
 
 **🎉 MVP 성공 기준 5개(PRD.md 7장) 전부 충족 — MVP 사실상 완료.**
 
-- [x] E2E CI 자동화 — `.github/workflows/e2e.yml`(매일 스케줄 + 수동 실행) + `e2e/global.teardown.ts`(service_role 키로 Auth 고아 계정 정리, 키 없으면 안전하게 스킵). **GitHub repo Settings → Secrets에 `DATABASE_URL`/`DIRECT_URL`/`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SERVICE_ROLE_KEY` 등록 필요 (사용자가 직접) — 등록 전까진 워크플로가 실패함.**
+- [x] E2E CI 자동화 — `.github/workflows/e2e.yml`(매일 스케줄 + 수동 실행) + `e2e/global.teardown.ts`(service_role 키로 Auth 고아 계정 정리, 키 없으면 안전하게 스킵). GitHub repo Settings → Secrets에 `DATABASE_URL`/`DIRECT_URL`/`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SERVICE_ROLE_KEY` 등록 완료(2026-08-20).
 - [ ] 후속 과제 (아래 "나중에 추가" 참고) ← **지금 여기**
 
 > 상세 리포트: `docs/report/screens-report-2026-08-18.md` (만든 화면·컴포넌트·핵심 로직·미완 과제), `docs/report/e2e-report-2026-08-18.md` (E2E 결과 + P2/P3 발견사항)
