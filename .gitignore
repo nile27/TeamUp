@@ -48,3 +48,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /e2e/.auth/
+
+# 로컬 전용 메모(직접 테스트한 결과·스크린샷 등, 커밋 대상 아님)
+/docs/local전용/
+/docs/testing/
