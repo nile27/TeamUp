@@ -73,8 +73,13 @@ export default async function DashboardPage() {
                 actionHref="/recruit/new"
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {recruits.map((recruit) => (
+                  // RecruitCard 내부 최상위 Link가 h-full이라, 이 grid 셀처럼 카드 밑에
+                  // "지원자 보기" 링크가 추가로 붙는 곳에서 카드가 셀 전체 높이(같은 행의
+                  // 가장 큰 셀 기준)를 다 차지해버려 링크가 셀 밖으로 밀려나 다음 행과
+                  // 겹치는 문제가 있었음. 그리드를 items-start로 바꿔 셀이 stretch(늘어나지)
+                  // 않고 콘텐츠 높이만큼만 차지하도록 수정.
                   <div key={recruit.id} className="space-y-2">
                     <RecruitCard
                       data={{
