@@ -105,7 +105,7 @@ export default async function CommunityPage({
 
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         <PageHeader
           title="커뮤니티"
           description="부담 없이 아이디어를 던지고, 반응을 확인해보세요."

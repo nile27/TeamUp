@@ -31,10 +31,12 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <div className="flex items-start justify-between gap-4 mb-8">
+        <div className="mb-6 rounded-2xl border border-border/60 bg-card p-6 shadow-sm flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Avatar size="lg">
-              <AvatarFallback>{profile?.nickname?.[0] ?? "U"}</AvatarFallback>
+            <Avatar size="lg" className="ring-2 ring-primary/20">
+              <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold">
+                {profile?.nickname?.[0] ?? "U"}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-xl font-bold text-foreground">{profile?.nickname ?? "사용자"}</h1>
@@ -47,7 +49,7 @@ export default async function DashboardPage() {
           </Button>
         </div>
 
-        <div className="mb-8 rounded-xl border bg-white p-5">
+        <div className="mb-8 rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-3">포트폴리오 · 경력</h2>
           {profile?.portfolio ? (
             <MarkdownContent content={profile.portfolio} />
@@ -116,7 +118,7 @@ export default async function DashboardPage() {
             {posts.length === 0 ? (
               <EmptyState message="아직 작성한 글이 없어요." actionLabel="글쓰기" actionHref="/community/new" />
             ) : (
-              <div className="bg-white border rounded-xl overflow-hidden">
+              <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm">
                 {posts.map((post) => (
                   <PostListItem
                     key={post.id}
@@ -144,7 +146,7 @@ export default async function DashboardPage() {
                 actionHref="/recruit"
               />
             ) : (
-              <div className="bg-white border rounded-xl overflow-hidden">
+              <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm">
                 {applications.map((app) => (
                   <ApplicationItem key={app.id} recruit={app.recruit} status={app.status} />
                 ))}
@@ -167,7 +169,7 @@ function EmptyState({
   actionHref: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center bg-white border border-dashed border-border rounded-xl">
+    <div className="flex flex-col items-center justify-center py-16 text-center bg-card border border-dashed border-border rounded-2xl">
       <p className="text-muted-foreground mb-6 text-sm">{message}</p>
       <Button render={<Link href={actionHref} />} nativeButton={false}>
         {actionLabel}

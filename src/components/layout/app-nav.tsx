@@ -6,7 +6,6 @@ import { logout } from '@/features/auth/actions';
 export async function AppNav() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  console.log("AppNav render. User:", user?.id);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -46,7 +45,7 @@ export async function AppNav() {
                 <Link href="/login" className={buttonVariants({ variant: "ghost" })}>
                   로그인
                 </Link>
-                <Link href="/signup" className={buttonVariants({ className: "bg-[#FFA940] text-[#2B2620] hover:bg-[#F08C00]" })}>
+                <Link href="/signup" className={buttonVariants()}>
                   시작하기
                 </Link>
               </>

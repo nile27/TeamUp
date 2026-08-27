@@ -15,7 +15,40 @@
 
 **다음에 할 것**
 - 모바일 세션에 이 마이그레이션 완료 사실 전달 → 모바일 쪽 Realtime 구독 코드 추가는 모바일 세션에서 진행.
-- 이월: N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 삭제 기능 필요성 논의, 로컬 dev DB 분리 검토 (상세는 2026-08-26 항목 참고).
+- 이월: N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 로컬 dev DB 분리 검토 (상세는 2026-08-26 항목 참고).
+
+---
+
+## 2026-08-27 (목) 리디자인
+
+**한 일**
+- **`taste-skill`(redesign-existing-projects) 설치 후 웹 전체 UI 리디자인 1차 진행.** `npx skills add https://github.com/Leonxlnx/taste-skill --skill "redesign-existing-projects"`로 설치(`.agents/skills/`, `.claude/skills`에 심볼릭 링크, 커밋함). 랜딩 제외 전체(인증/모집/커뮤니티/마이페이지) 대상, **스타일링 레이어만 — Server Action·데이터 페칭·SSR/ISR 렌더링 전략은 그대로 유지**하는 제약으로 진행.
+  - **타이포/여백** (체감 제일 큰 변화): `PageHeader`(목록 페이지 공용 타이틀) 24px→44px extrabold로, 상세 페이지 제목 24px→30px extrabold. 리스트 컨테이너 여백(`py-8`→`py-12`)·카드 간격(`gap-6`→`gap-8`) 확대.
+  - **컴포넌트 구조**: `RecruitCard`에 상단 그라데이션 스트립 + 역할 뱃지 dot 인디케이터 + 아이콘 원형 배경 추가. `PostListItem`/`CommentList`/`ApplicantRow`에 닉네임 해시 기반 아바타 색상(`src/lib/avatar-tone.ts` 신규, 3톤 순환) 추가 — 텍스트만 있던 리스트에 시각적 앵커 생김. 공용 `Card` 컴포넌트에 기본 그림자 추가(기존엔 얇은 테두리만 있는 flat 스타일).
+  - **로그인/회원가입 페이지 재구성**: 전형적인 "Tailwind 템플릿" 패턴(회색 배경+흰 카드) 탈피 — 은은한 앰버 그라데이션 배경, 브랜드 마크, 제대로 된 스켈레톤 로딩(`<div>Loading form...</div>` 방치돼있던 것도 고침).
+  - **모집 목록의 기술스택 필터를 캐러셀로 변경**: 소제목("기술 스택으로 필터링 (25)") 추가, 가로 스크롤 + 양쪽 화살표 버튼 + 페이드 효과. 처음엔 화살표가 소제목 옆에 모여있고 첫 뱃지가 페이드에 가려 잘려 보이는 문제 있었음 — 화살표를 캐러셀 양 끝으로, 스크롤 영역에 좌우 패딩(`px-10`) 줘서 해결.
+  - **프로젝트 전체 하드코딩 hex 색상 제거** (10개 파일, 전부 테마 토큰으로) — CLAUDE.md 자체 규칙 위반이었던 것도 겸사겸사 정리. `AppNav`의 디버그 `console.log`도 제거.
+  - 검증: tsc/lint 클린, e2e 전체 21개 통과(1개는 격리 실행 시 실패했으나 전체 스위트 재실행 시 통과 — 오늘 변경과 무관한 기존 flaky 테스트로 확인, `git stash` 비교로 검증).
+  - 모바일에도 같은 스킬 적용해보기로 함 — `docs/local전용/mobile-redesign-prompt.md`에 프롬프트 작성 (스킬 체크리스트가 웹 CSS 기준이라 RN 스타일링 방식으로 해석해서 적용하라는 안내 포함).
+
+**다음에 할 것**
+- 남은 화면(작성/수정 폼, 지원자 관리 이미 일부 반영) 계속 리디자인 이어가기 — 사용자 피드백 받으면서 진행 중.
+- 모바일 세션에 `mobile-redesign-prompt.md` 전달.
+- 오늘 리디자인 변경사항 아직 커밋 안 함(스타일 파일 다수 수정 중) — 사용자가 만족하는 지점에서 커밋 예정.
+
+---
+
+## 2026-08-27 (목) 추가
+
+**한 일**
+- **모집글/커뮤니티글 삭제 기능 완성 (웹 UI + REST API).** `deleteRecruit`/`deleteCommunityPost` Server Action(작성자 본인만, cascade로 연관 데이터 자동 삭제) + 상세 페이지·마이페이지 양쪽 삭제 버튼. 모바일용으로 `DELETE /api/recruit/[id]`/`DELETE /api/community/[id]`도 추가(Bearer 인증), OpenAPI 문서 갱신. 로컬에서 4가지 삭제 경로 + API curl 검증 완료, e2e 통과. PR #24 머지·배포됨.
+- **커뮤니티 좋아요/댓글 실시간 관련 버그 진단·수정.** 사용자가 웹+모바일 동시에 켜놓고 테스트: "웹에서 좋아요는 모바일에 실시간 반영되는데 좋아요 취소는 안 됨" 신고. 원인 확정 — `CommunityPostLike`/`Comment`/`Recruit`/`Application` 4개 테이블이 기본 `REPLICA IDENTITY`(PK만)라 DELETE 이벤트의 페이로드에 `postId` 등 나머지 컬럼이 안 실려서 모바일이 어떤 글의 좋아요/댓글/모집글이 삭제됐는지 알 수 없었음. 4개 테이블 전부 `REPLICA IDENTITY FULL`로 변경해 해결, `pg_class.relreplident`로 검증 완료. 모바일 쪽 DELETE 이벤트 핸들러 점검 요청 프롬프트를 `docs/local전용/mobile-realtime-delete-fix-prompt.md`에 작성.
+- **웹 자체의 실시간(좋아요 숫자 등) 지원 여부 논의** — 확인해보니 웹엔 Supabase Realtime 구독 코드가 아예 없음(원래 모바일 전용 기능). 인스타/유튜브 같은 실제 SNS도 좋아요 숫자는 실시간 push가 아니라 새로고침 시점 스냅샷이라는 걸 근거로, 웹에 새로 실시간 구독을 붙이는 건 보류하기로 함 — 사용자가 더 고민해보기로. 커뮤니티 목록(`/community`)은 ISR 아니고 SSR(요청마다 새로 렌더)인 것도 이 논의 중에 확인.
+
+**다음에 할 것**
+- 모바일 세션에 `mobile-realtime-delete-fix-prompt.md` 전달 → 모바일 쪽 DELETE 이벤트 핸들러 수정 확인.
+- 웹 자체 Realtime(좋아요 숫자 등) 도입 여부는 아직 미결정 — 나중에 사용자가 방향 정하면 진행.
+- 이월 항목은 위 2026-08-27 항목 및 2026-08-26 항목 참고.
 
 ---
 

@@ -49,7 +49,7 @@ export function ApplyBar({
   };
 
   return (
-    <div className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_16px_-4px_rgba(0,0,0,0.06)]">
       <div className="container mx-auto max-w-4xl px-4 py-4">
         {isAuthor ? (
           <Button render={<Link href={`/recruit/${recruitId}/applicants`} />} nativeButton={false} className="w-full">

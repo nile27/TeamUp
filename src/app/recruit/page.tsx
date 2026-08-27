@@ -15,11 +15,11 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
 
   if (recruits.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-dashed border-border rounded-xl">
-        <div className="text-4xl mb-4">📭</div>
-        <h3 className="text-lg font-bold text-[#2B2620] mb-2">아직 모집글이 없어요</h3>
+      <div className="flex flex-col items-center justify-center py-24 text-center bg-card border border-dashed border-border rounded-xl">
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary text-2xl">📭</div>
+        <h3 className="text-lg font-bold text-foreground mb-2">아직 모집글이 없어요</h3>
         <p className="text-muted-foreground mb-6 text-sm">해당 기술 스택을 찾는 첫 번째 프로젝트의 리더가 되어보세요!</p>
-        <Button render={<Link href="/recruit/new" />} nativeButton={false} className="bg-[#FFA940] text-[#2B2620] hover:bg-[#F08C00]">
+        <Button render={<Link href="/recruit/new" />} nativeButton={false}>
           모집글 작성하기
         </Button>
       </div>
@@ -27,7 +27,7 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {recruits.map((recruit) => {
         const mappedData = {
           id: recruit.id,
@@ -50,19 +50,19 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
 // Skeleton component
 function RecruitListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {[1, 2, 3, 4, 5, 6].map(i => (
-        <div key={i} className="h-[280px] bg-white rounded-xl border border-border p-5 flex flex-col gap-4 animate-pulse">
+        <div key={i} className="h-[280px] bg-card rounded-xl border border-border p-5 flex flex-col gap-4 animate-pulse">
           <div className="flex justify-between">
-            <div className="w-16 h-5 bg-slate-200 rounded"></div>
+            <div className="w-16 h-5 bg-muted rounded"></div>
           </div>
-          <div className="w-3/4 h-6 bg-slate-200 rounded mt-2"></div>
-          <div className="w-full h-4 bg-slate-200 rounded mt-1"></div>
-          <div className="w-5/6 h-4 bg-slate-200 rounded"></div>
-          <div className="w-full h-8 bg-slate-200 rounded mt-4"></div>
+          <div className="w-3/4 h-6 bg-muted rounded mt-2"></div>
+          <div className="w-full h-4 bg-muted rounded mt-1"></div>
+          <div className="w-5/6 h-4 bg-muted rounded"></div>
+          <div className="w-full h-8 bg-muted rounded mt-4"></div>
           <div className="mt-auto flex gap-2">
-            <div className="w-16 h-6 bg-slate-200 rounded"></div>
-            <div className="w-16 h-6 bg-slate-200 rounded"></div>
+            <div className="w-16 h-6 bg-muted rounded"></div>
+            <div className="w-16 h-6 bg-muted rounded"></div>
           </div>
         </div>
       ))}
@@ -80,12 +80,12 @@ export default async function RecruitPage({
 
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
         <PageHeader 
           title="팀 찾기" 
           description="다양한 아이디어가 당신의 합류를 기다리고 있습니다."
           action={
-            <Button render={<Link href="/recruit/new" />} nativeButton={false} className="bg-[#FFA940] text-[#2B2620] hover:bg-[#F08C00]">
+            <Button render={<Link href="/recruit/new" />} nativeButton={false}>
               모집글 작성
             </Button>
           }

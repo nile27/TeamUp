@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MarkdownContent } from "@/components/common/markdown-content";
 import { updateApplicationStatus } from "../actions";
+import { avatarTone } from "@/lib/avatar-tone";
 import type { ApplicationStatus } from "@prisma/client";
 
 const STATUS_LABEL: Record<ApplicationStatus, string> = {
@@ -31,11 +32,13 @@ interface ApplicantRowProps {
 
 export function ApplicantRow({ applicationId, status, message, applicant }: ApplicantRowProps) {
   return (
-    <div className="border rounded-xl bg-white p-5 space-y-3">
+    <div className="border border-border/60 rounded-2xl bg-card p-5 space-y-3 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <Avatar size="lg">
-            <AvatarFallback>{applicant.nickname[0]}</AvatarFallback>
+            <AvatarFallback className={`font-semibold ${avatarTone(applicant.nickname)}`}>
+              {applicant.nickname[0]}
+            </AvatarFallback>
           </Avatar>
           <div>
             <p className="font-semibold text-foreground">{applicant.nickname}</p>
