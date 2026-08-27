@@ -8,6 +8,17 @@
 
 ---
 
+## 2026-08-27 (목)
+
+**한 일**
+- **커뮤니티 좋아요/댓글 Realtime 마이그레이션 적용 완료.** `CommunityPostLike`/`Comment` 테이블에 `Recruit`/`Application`과 동일한 패턴(RLS 활성화 + `select using (true)` 정책 + `supabase_realtime` publication 등록) 적용. 적용 전 Supabase MCP로 전제 조건(기존 두 테이블 정상 동작, 웹이 쓰는 `postgres` 롤이 `rolbypassrls=true`) 재확인 후 실행, 적용 후 `relrowsecurity`/`pg_publication_tables`로 검증, 로컬에서 실제 로그인해 좋아요 토글·댓글 등록 정상 동작 확인(테스트 계정/데이터 정리 완료). 이제 모바일에서 이 두 테이블 구독 코드만 추가하면 좋아요/댓글 실시간 반영됨.
+
+**다음에 할 것**
+- 모바일 세션에 이 마이그레이션 완료 사실 전달 → 모바일 쪽 Realtime 구독 코드 추가는 모바일 세션에서 진행.
+- 이월: N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 삭제 기능 필요성 논의, 로컬 dev DB 분리 검토 (상세는 2026-08-26 항목 참고).
+
+---
+
 ## 2026-08-26 (수)
 
 **한 일**
@@ -33,8 +44,22 @@
 - 낙관적 업데이트가 "2~3번 클릭해야 바뀌는" 느낌이 있다는 피드백 — 코드는 즉시 반영되게 짜여있는데 체감과 다름, 실제로 눈으로 다시 확인 필요. (리전 수정으로 네트워크 지연 자체가 줄었으니 이 체감도 개선됐을 가능성 있음 — 재확인 필요)
 - 좋아요 연타 방지 수정이 실제 신고된 모바일 버그와 같은 원인인지 아직 미확인 — 모바일 쪽도 같은 패턴(동시 요청 방지)으로 고쳐야 하는지 확인 필요.
 - ~~모바일 쪽도 API 호출이 이 웹 프로젝트의 `/api/*`를 쓰고 있다면, 이번 리전 수정으로 모바일 체감 속도도 같이 개선됐을 가능성 있음~~ → 사용자가 모바일에서 직접 확인, 속도 개선 체감 확인됨.
-- 오늘 dev에 쌓인 리전/UI 수정 커밋들 아직 main 미배포분 있으면 PR 올려서 반영 여부 확인 (좋아요/저장 레이아웃 수정 건).
+- ~~오늘 dev에 쌓인 리전/UI 수정 커밋들 아직 main 미배포분 있으면 PR 올려서 반영 여부 확인~~ → PR #23 머지 완료, 배포됨.
 - 로컬 dev가 프로덕션과 같은 Supabase DB를 공유하는 구조라 테스트할 때마다 실제 데이터가 오염될 위험이 있음 — 로컬 전용 Supabase 프로젝트(또는 브랜치 DB) 분리를 고려해볼 만함.
+- **커뮤니티 좋아요/댓글 실시간 반영 안 됨 — 모바일에서 신고.** `CommunityPostLike`/`Comment` 테이블에 `Recruit`/`Application`과 같은 패턴(RLS 활성화 + `select using (true)` 정책 + `supabase_realtime` publication 등록)을 적용하면 될 것으로 보임. 오늘 Supabase MCP로 전제 조건 다 확인함(`Recruit`/`Application`은 이미 적용돼 있고 정상 동작 중, 웹이 쓰는 `postgres` 롤은 `rolbypassrls=true`라 RLS 켜도 웹 동작엔 영향 없음, `CommunityPostLike`/`Comment`는 현재 RLS 꺼져있는 상태로 전제와 일치) — **실행 직전까지 준비됐고 사용자 확인만 남음.** 적용할 SQL은 아래 참고.
+  ```sql
+  alter table "CommunityPostLike" enable row level security;
+  create policy "anyone can select community post like"
+  on "CommunityPostLike" for select using (true);
+  alter publication supabase_realtime add table "CommunityPostLike";
+
+  alter table "Comment" enable row level security;
+  create policy "anyone can select comment"
+  on "Comment" for select using (true);
+  alter publication supabase_realtime add table "Comment";
+  ```
+  적용 후 모바일 쪽 구독 코드는 모바일 세션에서 진행 예정.
+- 모바일에서 다시 정리해서 보낸 "웹+모바일 속도 조사" 프롬프트는 오늘 리전 수정으로 이미 대부분 해결된 내용이라, 재작성한 버전을 `docs/local전용/mobile-speed-investigation-prompt-v2.md`에 남겨둠 — 남은 항목(N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인)만 모바일 세션에서 마저 확인.
 
 ---
 
