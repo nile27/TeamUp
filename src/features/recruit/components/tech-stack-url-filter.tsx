@@ -31,11 +31,28 @@ export function TechStackUrlFilter() {
 
   const scrollBy = (dx: number) => scrollerRef.current?.scrollBy({ left: dx, behavior: "smooth" });
 
+  const resetFilter = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("stack");
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
     <div className="mb-8">
-      <h2 className="text-sm font-semibold text-foreground mb-2.5">
-        기술 스택으로 필터링 <span className="text-muted-foreground font-normal">({TECH_STACK_OPTIONS.length})</span>
-      </h2>
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="text-sm font-semibold text-foreground">
+          기술 스택으로 필터링 <span className="text-muted-foreground font-normal">({TECH_STACK_OPTIONS.length})</span>
+        </h2>
+        {currentStacks.length > 0 && (
+          <button
+            type="button"
+            onClick={resetFilter}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-2"
+          >
+            필터 초기화 ({currentStacks.length})
+          </button>
+        )}
+      </div>
 
       <div className="relative">
         {/* 좌우 화살표 — 캐러셀 양 끝에 오버레이. 페이드 영역만큼 스크롤 콘텐츠에 여백을 줘서
