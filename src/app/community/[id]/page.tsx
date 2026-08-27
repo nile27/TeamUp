@@ -63,7 +63,7 @@ export default async function CommunityDetailPage({
               />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{post.title}</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1.5">
             {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
             <span data-testid="post-view-count" className="inline-flex items-center gap-1 ml-1">

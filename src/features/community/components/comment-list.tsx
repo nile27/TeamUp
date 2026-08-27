@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createComment } from "../actions";
+import { avatarTone } from "@/lib/avatar-tone";
 
 export interface CommentItem {
   id: string;
@@ -49,12 +50,19 @@ export function CommentList({ postId, comments, isLoggedIn }: CommentListProps) 
       ) : (
         <ul className="space-y-4">
           {comments.map((comment) => (
-            <li key={comment.id} className="border-b pb-4 last:border-b-0">
-              <div className="flex items-center gap-2 text-sm mb-1">
-                <span className="font-medium text-foreground">{comment.author.nickname}</span>
-                <span className="text-muted-foreground text-xs">{comment.createdAt}</span>
+            <li key={comment.id} className="flex gap-3 border-b pb-4 last:border-b-0">
+              <div
+                className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarTone(comment.author.nickname)}`}
+              >
+                {comment.author.nickname.slice(0, 1)}
               </div>
-              <p className="text-[15px] text-foreground whitespace-pre-wrap">{comment.content}</p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-sm mb-1">
+                  <span className="font-medium text-foreground">{comment.author.nickname}</span>
+                  <span className="text-muted-foreground text-xs">{comment.createdAt}</span>
+                </div>
+                <p className="text-[15px] text-foreground whitespace-pre-wrap">{comment.content}</p>
+              </div>
             </li>
           ))}
         </ul>

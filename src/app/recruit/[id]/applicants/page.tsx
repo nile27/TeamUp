@@ -42,7 +42,7 @@ export default async function RecruitApplicantsPage({
         />
 
         {recruit.applications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center bg-white border border-dashed border-border rounded-xl">
+          <div className="flex flex-col items-center justify-center py-16 text-center bg-card border border-dashed border-border rounded-2xl">
             <p className="text-muted-foreground text-sm">아직 지원자가 없어요.</p>
           </div>
         ) : (
