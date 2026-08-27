@@ -12,6 +12,7 @@ import { CompletenessGauge } from "@/features/recruit/components/completeness-ga
 import { TechStackTags } from "@/features/recruit/components/tech-stack-tags";
 import { ApplyBar } from "@/features/recruit/components/apply-bar";
 import { BookmarkButton } from "@/features/recruit/components/bookmark-button";
+import { DeleteRecruitButton } from "@/features/recruit/components/delete-recruit-button";
 import { createClient } from "@/server/supabase";
 import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
@@ -64,9 +65,12 @@ export default async function RecruitDetailPage({
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {user?.id === recruit.authorId && (
-                <Button render={<Link href={`/recruit/${recruit.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
-                  수정
-                </Button>
+                <>
+                  <Button render={<Link href={`/recruit/${recruit.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                    수정
+                  </Button>
+                  <DeleteRecruitButton recruitId={recruit.id} />
+                </>
               )}
               <BookmarkButton
                 recruitId={recruit.id}

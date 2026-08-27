@@ -77,6 +77,18 @@ Authorization: Bearer <supabase access token>
 
 ---
 
+## `DELETE /api/recruit/[id]`
+
+모집글 삭제. **작성자 본인만.** 역할/지원/저장 등 연관 데이터는 DB `onDelete: Cascade`로 함께 삭제됨(되돌릴 수 없음). **인증 필요.**
+
+**응답**
+- `200` `{ "data": { "deleted": true } }`
+- `401` 미인증
+- `403` 작성자 아님
+- `404` 모집을 찾을 수 없음
+
+---
+
 ## `POST /api/applications`
 
 지원. **인증 필요.**
@@ -146,6 +158,18 @@ Supabase Auth 회원가입 직후 Prisma `User` 프로필 레코드 생성(없�
 **응답**
 - `200` `{ "data": { ...post, "comments": [...], "alreadyLiked": boolean } }`
 - `404` `{ "error": "글을 찾을 수 없습니다." }`
+
+---
+
+## `DELETE /api/community/[id]`
+
+커뮤니티 글 삭제. **작성자 본인만.** 댓글/좋아요 등 연관 데이터는 DB `onDelete: Cascade`로 함께 삭제됨(되돌릴 수 없음). **인증 필요.**
+
+**응답**
+- `200` `{ "data": { "deleted": true } }`
+- `401` 미인증
+- `403` 작성자 아님
+- `404` 글을 찾을 수 없음
 
 ---
 

@@ -225,3 +225,27 @@ export async function toggleCommunityPostLike(
     return { error: "좋아요 처리 중 오류가 발생했습니다." };
   }
 }
+
+export async function deleteCommunityPost(postId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const post = await prisma.communityPost.findUnique({ where: { id: postId }, select: { authorId: true } });
+  if (!post) {
+    notFound();
+  }
+  if (post.authorId !== user.id) {
+    redirect(`/community/${postId}`);
+  }
+
+  // Comment/CommunityPostLike는 schema.prisma에서 onDelete: Cascade로 걸려있어
+  // 이 한 줄로 연관 데이터까지 함께 삭제됨.
+  await prisma.communityPost.delete({ where: { id: postId } });
+
+  revalidatePath("/community");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}

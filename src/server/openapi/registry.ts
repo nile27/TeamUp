@@ -143,6 +143,7 @@ function envelope<T extends z.ZodTypeAny>(data: T) {
 const badRequest = { description: "검증 실패", content: { "application/json": { schema: errorSchema } } };
 const unauthorized = { description: "미인증", content: { "application/json": { schema: errorSchema } } };
 const notFound = { description: "찾을 수 없음", content: { "application/json": { schema: errorSchema } } };
+const forbidden = { description: "작성자 아님", content: { "application/json": { schema: errorSchema } } };
 
 // ── 경로 정의 ──
 
@@ -193,6 +194,25 @@ registry.registerPath({
       description: "모집 상세",
       content: { "application/json": { schema: envelope(recruitSchema) } },
     },
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/recruit/{id}",
+  summary: "모집글 삭제 (작성자 본인만)",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "삭제 완료",
+      content: { "application/json": { schema: envelope(z.object({ deleted: z.literal(true) })) } },
+    },
+    401: unauthorized,
+    403: forbidden,
     404: notFound,
   },
 });
@@ -291,6 +311,25 @@ registry.registerPath({
       description: "글 상세(댓글 포함)",
       content: { "application/json": { schema: envelope(communityPostDetailSchema) } },
     },
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/community/{id}",
+  summary: "커뮤니티 글 삭제 (작성자 본인만)",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "삭제 완료",
+      content: { "application/json": { schema: envelope(z.object({ deleted: z.literal(true) })) } },
+    },
+    401: unauthorized,
+    403: forbidden,
     404: notFound,
   },
 });

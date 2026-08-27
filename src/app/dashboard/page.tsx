@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MarkdownContent } from "@/components/common/markdown-content";
 import { RecruitCard } from "@/features/recruit/components/recruit-card";
+import { DeleteRecruitButton } from "@/features/recruit/components/delete-recruit-button";
 import { PostListItem } from "@/features/community/components/post-list-item";
+import { DeletePostButton } from "@/features/community/components/delete-post-button";
 import { ApplicationItem } from "@/features/dashboard/components/application-item";
 import { getDashboardProfile, getMyRecruits, getMyPosts, getMyApplications } from "@/features/dashboard/queries";
 import { RECRUIT_TYPE_LABEL, COMMUNITY_TAG_LABEL } from "@/config/labels";
@@ -95,12 +97,15 @@ export default async function DashboardPage() {
                         isClosed: recruit.status !== "OPEN",
                       }}
                     />
-                    <Link
-                      href={`/recruit/${recruit.id}/applicants`}
-                      className="block text-center text-sm font-medium text-primary hover:underline"
-                    >
-                      지원자 보기 ({recruit._count.applications})
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/recruit/${recruit.id}/applicants`}
+                        className="flex-1 text-center text-sm font-medium text-primary hover:underline"
+                      >
+                        지원자 보기 ({recruit._count.applications})
+                      </Link>
+                      <DeleteRecruitButton recruitId={recruit.id} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -124,6 +129,7 @@ export default async function DashboardPage() {
                       likeCount: post._count.likes,
                       commentCount: post._count.comments,
                     }}
+                    actions={<DeletePostButton postId={post.id} />}
                   />
                 ))}
               </div>

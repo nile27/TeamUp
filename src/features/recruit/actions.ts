@@ -300,3 +300,28 @@ export async function toggleRecruitBookmark(
     return { error: "저장 처리 중 오류가 발생했습니다." };
   }
 }
+
+export async function deleteRecruit(recruitId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const recruit = await prisma.recruit.findUnique({ where: { id: recruitId }, select: { authorId: true } });
+  if (!recruit) {
+    notFound();
+  }
+  if (recruit.authorId !== user.id) {
+    redirect(`/recruit/${recruitId}`);
+  }
+
+  // Role/Application/Bookmark는 schema.prisma에서 onDelete: Cascade로 걸려있어
+  // 이 한 줄로 연관 데이터까지 함께 삭제됨.
+  await prisma.recruit.delete({ where: { id: recruitId } });
+
+  updateTag(`recruit-${recruitId}`);
+  revalidatePath("/recruit");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
