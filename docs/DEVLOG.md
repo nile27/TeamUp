@@ -15,7 +15,21 @@
 
 **다음에 할 것**
 - 모바일 세션에 이 마이그레이션 완료 사실 전달 → 모바일 쪽 Realtime 구독 코드 추가는 모바일 세션에서 진행.
-- 이월: N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 삭제 기능 필요성 논의, 로컬 dev DB 분리 검토 (상세는 2026-08-26 항목 참고).
+- 이월: N+1 쿼리 점검, Realtime publication 부하 확인, 낙관적 업데이트 체감 재확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 로컬 dev DB 분리 검토 (상세는 2026-08-26 항목 참고).
+
+---
+
+## 2026-08-27 (목) 추가
+
+**한 일**
+- **모집글/커뮤니티글 삭제 기능 완성 (웹 UI + REST API).** `deleteRecruit`/`deleteCommunityPost` Server Action(작성자 본인만, cascade로 연관 데이터 자동 삭제) + 상세 페이지·마이페이지 양쪽 삭제 버튼. 모바일용으로 `DELETE /api/recruit/[id]`/`DELETE /api/community/[id]`도 추가(Bearer 인증), OpenAPI 문서 갱신. 로컬에서 4가지 삭제 경로 + API curl 검증 완료, e2e 통과. PR #24 머지·배포됨.
+- **커뮤니티 좋아요/댓글 실시간 관련 버그 진단·수정.** 사용자가 웹+모바일 동시에 켜놓고 테스트: "웹에서 좋아요는 모바일에 실시간 반영되는데 좋아요 취소는 안 됨" 신고. 원인 확정 — `CommunityPostLike`/`Comment`/`Recruit`/`Application` 4개 테이블이 기본 `REPLICA IDENTITY`(PK만)라 DELETE 이벤트의 페이로드에 `postId` 등 나머지 컬럼이 안 실려서 모바일이 어떤 글의 좋아요/댓글/모집글이 삭제됐는지 알 수 없었음. 4개 테이블 전부 `REPLICA IDENTITY FULL`로 변경해 해결, `pg_class.relreplident`로 검증 완료. 모바일 쪽 DELETE 이벤트 핸들러 점검 요청 프롬프트를 `docs/local전용/mobile-realtime-delete-fix-prompt.md`에 작성.
+- **웹 자체의 실시간(좋아요 숫자 등) 지원 여부 논의** — 확인해보니 웹엔 Supabase Realtime 구독 코드가 아예 없음(원래 모바일 전용 기능). 인스타/유튜브 같은 실제 SNS도 좋아요 숫자는 실시간 push가 아니라 새로고침 시점 스냅샷이라는 걸 근거로, 웹에 새로 실시간 구독을 붙이는 건 보류하기로 함 — 사용자가 더 고민해보기로. 커뮤니티 목록(`/community`)은 ISR 아니고 SSR(요청마다 새로 렌더)인 것도 이 논의 중에 확인.
+
+**다음에 할 것**
+- 모바일 세션에 `mobile-realtime-delete-fix-prompt.md` 전달 → 모바일 쪽 DELETE 이벤트 핸들러 수정 확인.
+- 웹 자체 Realtime(좋아요 숫자 등) 도입 여부는 아직 미결정 — 나중에 사용자가 방향 정하면 진행.
+- 이월 항목은 위 2026-08-27 항목 및 2026-08-26 항목 참고.
 
 ---
 
