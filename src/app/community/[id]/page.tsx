@@ -10,6 +10,7 @@ import { incrementPostViewCount } from "@/features/community/actions";
 import { PromoteBanner } from "@/features/community/components/promote-banner";
 import { CommentList } from "@/features/community/components/comment-list";
 import { LikeButton } from "@/features/community/components/like-button";
+import { DeletePostButton } from "@/features/community/components/delete-post-button";
 import { createClient } from "@/server/supabase";
 import { COMMUNITY_TAG_LABEL } from "@/config/labels";
 
@@ -47,9 +48,12 @@ export default async function CommunityDetailPage({
             <Badge variant="outline">{COMMUNITY_TAG_LABEL[post.tag]}</Badge>
             <div className="flex items-center gap-2 shrink-0">
               {isAuthor && (
-                <Button render={<Link href={`/community/${post.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
-                  수정
-                </Button>
+                <>
+                  <Button render={<Link href={`/community/${post.id}/edit`} />} nativeButton={false} variant="outline" size="sm">
+                    수정
+                  </Button>
+                  <DeletePostButton postId={post.id} />
+                </>
               )}
               <LikeButton
                 postId={post.id}
