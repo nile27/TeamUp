@@ -150,16 +150,21 @@ const forbidden = { description: "작성자 아님", content: { "application/jso
 registry.registerPath({
   method: "get",
   path: "/api/recruit",
-  summary: "모집 목록",
+  summary: "모집 목록 (cursor 기반 무한 스크롤)",
   request: {
     query: z.object({
       stack: z.string().optional().openapi({ description: "콤마로 구분된 기술스택 필터. 예: React,Node.js" }),
+      cursor: z.string().optional().openapi({ description: "이전 응답의 nextCursor. 생략하면 최신부터 20개." }),
     }),
   },
   responses: {
     200: {
-      description: "모집 목록",
-      content: { "application/json": { schema: envelope(z.array(recruitSchema)) } },
+      description: "모집 목록 — nextCursor가 null이면 더 없음",
+      content: {
+        "application/json": {
+          schema: envelope(z.object({ recruits: z.array(recruitSchema), nextCursor: z.string().nullable() })),
+        },
+      },
     },
   },
 });

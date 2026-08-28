@@ -54,12 +54,11 @@ async function CommunityPostList({ tag, page }: { tag?: CommunityTag; page: numb
         <div className="p-4 border-t">
           <Pagination>
             <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href={page > 1 ? `?page=${page - 1}${tag ? `&tag=${tag}` : ""}` : "#"}
-                  aria-disabled={page <= 1}
-                />
-              </PaginationItem>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious href={`?page=${page - 1}${tag ? `&tag=${tag}` : ""}`} />
+                </PaginationItem>
+              )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <PaginationItem key={p}>
                   <PaginationLink href={`?page=${p}${tag ? `&tag=${tag}` : ""}`} isActive={p === page}>
@@ -67,12 +66,11 @@ async function CommunityPostList({ tag, page }: { tag?: CommunityTag; page: numb
                   </PaginationLink>
                 </PaginationItem>
               ))}
-              <PaginationItem>
-                <PaginationNext
-                  href={page < totalPages ? `?page=${page + 1}${tag ? `&tag=${tag}` : ""}` : "#"}
-                  aria-disabled={page >= totalPages}
-                />
-              </PaginationItem>
+              {page < totalPages && (
+                <PaginationItem>
+                  <PaginationNext href={`?page=${page + 1}${tag ? `&tag=${tag}` : ""}`} />
+                </PaginationItem>
+              )}
             </PaginationContent>
           </Pagination>
         </div>

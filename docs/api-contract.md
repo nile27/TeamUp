@@ -26,15 +26,17 @@ Authorization: Bearer <supabase access token>
 
 ## `GET /api/recruit`
 
-모집 목록.
+모집 목록. **cursor 기반 무한 스크롤** (2026-08-28부터 — 이전엔 배열 전체 반환이었음, breaking change).
 
 **쿼리 파라미터**
 - `stack` (선택): 콤마로 구분된 기술스택 필터. 예: `?stack=React,Node.js`
+- `cursor` (선택): 이전 응답의 `nextCursor` 값. 생략하면 최신순 20개부터 시작.
 
 **응답 200**
 ```json
-{ "data": [ { "id": "...", "type": "DEV", "title": "...", "techStack": ["..."], "roles": [...], "_count": { "applications": 0, "bookmarks": 0 }, ... } ] }
+{ "data": { "recruits": [ { "id": "...", "type": "DEV", "title": "...", "techStack": ["..."], "roles": [...], "_count": { "applications": 0, "bookmarks": 0 }, ... } ], "nextCursor": "cmt..." } }
 ```
+`nextCursor`가 `null`이면 더 불러올 게 없다는 뜻. 다음 페이지 요청 시 `?cursor=<nextCursor>`로 호출.
 (목록 응답엔 `alreadyApplied` 없음 — 상세에서만 포함. `applyToRecruit` 성공 후엔 상세 재조회로 갱신.)
 
 ---

@@ -1,4 +1,5 @@
 import * as React from "react"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,8 +37,12 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 type PaginationLinkProps = {
   isActive?: boolean
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">
+  React.ComponentProps<typeof Link>
 
+// next/link의 <Link>를 씀 — 예전엔 순수 <a href>였는데, 그러면 Next.js 클라이언트
+// 라우팅을 안 타고 브라우저가 페이지 전체를 새로고침해버림(헤더·레이아웃까지 전부
+// 다시 그려짐). <Link>로 바꾸면 클라이언트 사이드 네비게이션이 되면서 실제로 데이터가
+// 바뀌는 목록 부분(Suspense 경계)만 갱신되고 나머지 레이아웃은 그대로 유지됨.
 function PaginationLink({
   className,
   isActive,
@@ -51,9 +56,8 @@ function PaginationLink({
       className={cn(className)}
       nativeButton={false}
       render={
-        <a
+        <Link
           aria-current={isActive ? "page" : undefined}
-          data-slot="pagination-link"
           data-active={isActive}
           {...props}
         />
@@ -64,12 +68,12 @@ function PaginationLink({
 
 function PaginationPrevious({
   className,
-  text = "Previous",
+  text = "이전",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label="이전 페이지로"
       size="default"
       className={cn("pl-1.5!", className)}
       {...props}
@@ -82,12 +86,12 @@ function PaginationPrevious({
 
 function PaginationNext({
   className,
-  text = "Next",
+  text = "다음",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label="다음 페이지로"
       size="default"
       className={cn("pr-1.5!", className)}
       {...props}
