@@ -30,7 +30,7 @@ Authorization: Bearer <supabase access token>
 
 **쿼리 파라미터**
 - `stack` (선택): 콤마로 구분된 기술스택 필터. 예: `?stack=React,Node.js`
-- `cursor` (선택): 이전 응답의 `nextCursor` 값. 생략하면 최신순 20개부터 시작.
+- `cursor` (선택): 이전 응답의 `nextCursor` 값. 생략하면 최신순 10개부터 시작.
 
 **응답 200**
 ```json

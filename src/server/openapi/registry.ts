@@ -154,7 +154,7 @@ registry.registerPath({
   request: {
     query: z.object({
       stack: z.string().optional().openapi({ description: "콤마로 구분된 기술스택 필터. 예: React,Node.js" }),
-      cursor: z.string().optional().openapi({ description: "이전 응답의 nextCursor. 생략하면 최신부터 20개." }),
+      cursor: z.string().optional().openapi({ description: "이전 응답의 nextCursor. 생략하면 최신부터 10개." }),
     }),
   },
   responses: {
