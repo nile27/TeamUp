@@ -47,9 +47,9 @@ export function ParticipationSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut", delay: idx * 0.1 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="bg-white border border-brand-line rounded-xl px-7 py-8"
+              className="bg-white rounded-2xl px-7 py-8 shadow-[0_2px_8px_rgba(43,38,32,0.06)] hover:shadow-[0_8px_24px_rgba(43,38,32,0.1)] transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-brand-amber-soft flex items-center justify-center text-[24px] mb-[18px]">
+              <div className="w-12 h-12 rounded-full bg-brand-amber flex items-center justify-center text-[24px] mb-[18px]">
                 {role.icon}
               </div>
               <h3 className="text-[18px] font-bold mb-2">{role.title}</h3>
