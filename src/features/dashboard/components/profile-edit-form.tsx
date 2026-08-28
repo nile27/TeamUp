@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,41 +58,43 @@ export function ProfileEditForm({ defaultValues }: ProfileEditFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {state?.error && (
         <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {state.error}
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="nickname">닉네임</Label>
-        <Input id="nickname" {...register("nickname")} disabled={isLoading} />
-        {errors.nickname && <p className="text-sm text-destructive">{errors.nickname.message}</p>}
-      </div>
+      <Card className="p-6 md:p-8 space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="nickname">닉네임</Label>
+          <Input id="nickname" {...register("nickname")} disabled={isLoading} />
+          {errors.nickname && <p className="text-sm text-destructive">{errors.nickname.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bio">한 줄 자기소개</Label>
-        <Textarea id="bio" rows={2} placeholder="어떤 걸 하는 사람인지 짧게 소개해주세요" {...register("bio")} disabled={isLoading} />
-        {errors.bio && <p className="text-sm text-destructive">{errors.bio.message}</p>}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="bio">한 줄 자기소개</Label>
+          <Textarea id="bio" rows={2} placeholder="어떤 걸 하는 사람인지 짧게 소개해주세요" {...register("bio")} disabled={isLoading} />
+          {errors.bio && <p className="text-sm text-destructive">{errors.bio.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="portfolio">포트폴리오 · 경력</Label>
-        <Controller
-          control={control}
-          name="portfolio"
-          render={({ field }) => (
-            <MarkdownEditor
-              id="portfolio"
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              placeholder={"예:\n## 프로젝트\n- OO 서비스 프론트엔드 개발 (2025)\n\n## 링크\n- [깃허브](https://github.com/...)"}
-            />
-          )}
-        />
-        {errors.portfolio && <p className="text-sm text-destructive">{errors.portfolio.message}</p>}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="portfolio">포트폴리오 · 경력</Label>
+          <Controller
+            control={control}
+            name="portfolio"
+            render={({ field }) => (
+              <MarkdownEditor
+                id="portfolio"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                placeholder={"예:\n## 프로젝트\n- OO 서비스 프론트엔드 개발 (2025)\n\n## 링크\n- [깃허브](https://github.com/...)"}
+              />
+            )}
+          />
+          {errors.portfolio && <p className="text-sm text-destructive">{errors.portfolio.message}</p>}
+        </div>
+      </Card>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (

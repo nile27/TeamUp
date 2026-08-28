@@ -3,13 +3,12 @@
 import { useActionState, useTransition } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Code2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
 import { createRecruitSchema, type CreateRecruitInput } from "../schema";
 import { createRecruit, updateRecruit } from "../actions";
 import { calcCompleteness } from "../completeness";
@@ -90,7 +89,7 @@ export function RecruitForm({ recruit }: RecruitFormProps) {
           });
         }
       })}
-      className="space-y-8"
+      className="space-y-6"
     >
       <PlannerGuideCard />
 
@@ -100,62 +99,73 @@ export function RecruitForm({ recruit }: RecruitFormProps) {
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label>모집 유형</Label>
-        <Controller
-          control={control}
-          name="type"
-          render={({ field }) => (
-            <div className="flex gap-2">
-              {(["DEV", "PLAN"] as const).map((type) => (
-                <Badge
-                  key={type}
-                  data-testid={`recruit-type-${type}`}
-                  onClick={() => field.onChange(type)}
-                  variant={field.value === type ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-1.5 text-sm"
-                >
-                  {RECRUIT_TYPE_LABEL[type]}
-                </Badge>
-              ))}
-            </div>
-          )}
-        />
-        {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
-      </div>
+      <Card className="p-6 md:p-8 space-y-6">
+        <div className="space-y-2">
+          <Label>모집 유형</Label>
+          <Controller
+            control={control}
+            name="type"
+            render={({ field }) => (
+              <div className="grid grid-cols-2 gap-3">
+                {(["DEV", "PLAN"] as const).map((type) => {
+                  const Icon = type === "DEV" ? Code2 : Lightbulb;
+                  const selected = field.value === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      data-testid={`recruit-type-${type}`}
+                      onClick={() => field.onChange(type)}
+                      className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                        selected
+                          ? "border-primary bg-secondary/60"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="font-semibold text-sm text-foreground">{RECRUIT_TYPE_LABEL[type]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+          {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="title">제목</Label>
-        <Input id="title" placeholder="모집글 제목을 입력해주세요" {...register("title")} />
-        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="title">제목</Label>
+          <Input id="title" placeholder="모집글 제목을 입력해주세요" {...register("title")} />
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="content">소개</Label>
-        <Textarea id="content" rows={5} placeholder="프로젝트를 소개해주세요" {...register("content")} />
-        {errors.content && <p className="text-sm text-destructive">{errors.content.message}</p>}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="content">소개</Label>
+          <Textarea id="content" rows={5} placeholder="프로젝트를 소개해주세요" {...register("content")} />
+          {errors.content && <p className="text-sm text-destructive">{errors.content.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label>필요한 역할</Label>
-        <RoleInput register={register} errors={errors} fieldArray={fieldArray} />
-      </div>
+        <div className="space-y-2">
+          <Label>필요한 역할</Label>
+          <RoleInput register={register} errors={errors} fieldArray={fieldArray} />
+        </div>
 
-      <div className="space-y-2">
-        <Label>기술 스택 (선택)</Label>
-        <Controller
-          control={control}
-          name="techStack"
-          render={({ field }) => <TechStackInput value={field.value} onChange={field.onChange} />}
-        />
-      </div>
+        <div className="space-y-2">
+          <Label>기술 스택 (선택)</Label>
+          <Controller
+            control={control}
+            name="techStack"
+            render={({ field }) => <TechStackInput value={field.value} onChange={field.onChange} />}
+          />
+        </div>
+      </Card>
 
-      <Separator />
-
-      <div className="space-y-4">
+      <Card className="p-6 md:p-8 space-y-5">
         <CompletenessGauge value={completeness} />
         <StructuredForm register={register} errors={errors} />
-      </div>
+      </Card>
 
       <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
         {isLoading ? (
