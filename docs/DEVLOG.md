@@ -8,6 +8,29 @@
 
 ---
 
+## 2026-08-28 (금)
+
+**한 일**
+- **taste-skill 리디자인 마무리.** 랜딩의 Why TeamUp/How it works/Participation 3개 섹션이 전부 "흰 카드+테두리"로 똑같아 보이던 걸 구분선 리스트/연결된 타임라인/그림자 카드로 차별화. 안 건드렸던 폼 3종(모집글 작성, 커뮤니티 글쓰기, 프로필 수정)도 Card로 구획 나누고 모집 유형 선택을 아이콘 타일로 교체.
+- **삼성 인터넷 일러스트 강제 반전 문제 — 원인 규명, 부분 완화.** `color-scheme: light` → `only light`로 강화(스펙상 더 강한 값, 이미지까지 다크 강제조정 대상에서 제외). 인라인 SVG로 바꾸면 완전히 막힐 것 같아 시도했다가 사용자가 되돌리자고 해서 롤백. 웹 검색으로 확인한 결론: **삼성 인터넷은 표준 다크모드 감지 자체를 지원 안 해서 코드로 완전히 못 고치는 브라우저 자체 한계** — `only light`가 최선의 완화책이고 완전 해결은 사용자가 브라우저 설정을 직접 꺼야 함.
+- **안 쓰는 다크모드 코드 정리.** `.dark{}` CSS 블록, shadcn 컴포넌트 6개의 `dark:` variant, `next-themes` 연동(패키지까지) 제거 — 이 앱은 다크모드 지원 안 해서 한 번도 실제로 쓰인 적 없는 죽은 코드였음.
+- **커뮤니티/모집 목록 페이지네이션 추가.** 모집(팀 찾기)엔 페이지네이션 자체가 아예 없었음 — `getPaginatedRecruitList` 신규(모바일 API용 `getRecruitList`는 안 건드림). 페이지네이션 UX 개선 3가지: ① 첫/마지막 페이지에서 이전·다음 버튼 숨김, ② 라벨 한글화("이전"/"다음"), ③ `PaginationLink`가 순수 `<a>`라 클릭할 때마다 브라우저 풀 리로드를 일으키던 걸 `next/link`로 교체해 클라이언트 라우팅(RSC payload만 갱신)으로 전환 — `_rsc=` 요청 헤더로 실측 확인. 겸사겸사 `data-slot` 중복(base-ui 라이브러리 이슈)으로 있던 하이드레이션 경고도 불필요한 속성 제거로 없앰.
+- **모집 API를 offset 배열 응답에서 cursor 기반 무한 스크롤로 변경 (breaking change).** `GET /api/recruit`가 모바일 쪽 페이지네이션이 아예 없다는 걸 확인하고, `{data: [...]}` → `{data: {recruits, nextCursor}}`로 전환. offset이 아니라 cursor를 쓴 이유: 무한 스크롤 중 새 글이 올라오면 offset 방식은 항목이 밀려서 중복/누락되는데 cursor는 그 문제가 없음. Prisma 네이티브 cursor(`cursor`+`skip:1`) + "N+1개 가져와서 넘치면 다음 페이지 있다고 판단"하는 방식이라 별도 count 쿼리 불필요. 페이지 크기는 처음 20으로 했다가 웹 목록(9~10)과 톤 맞춰 10으로 조정. 모바일 프롬프트 작성(`docs/local전용/mobile-recruit-cursor-pagination-prompt.md`, DB 구현 방식까지 상세 설명 포함).
+- **버그 발견·수정: 좋아요 누르면 조회수도 같이 올라감.** 원인: 조회수 증가가 상세 페이지 Server Component 렌더링 중에 직접 호출되는 구조였는데, **Next.js는 같은 페이지에서 어떤 Server Action이든 호출되면(좋아요 토글 등) 현재 라우트를 자동으로 다시 렌더링**해서 조회수 증가 함수도 같이 재실행됐던 것. 처음엔 쿠키로 dedup 시도했다가 "Server Component 렌더링 중 직접 호출"이라 `cookies().set()`이 조용히 실패하는 걸 발견(DB는 증가하는데 화면엔 0 반환 — catch가 에러를 삼킴). 최종 해결: 조회수 증가를 Server Action에서 **Route Handler**(`POST /api/community/[id]/view`, `POST /api/recruit/[id]/view`)로 옮기고 클라이언트가 마운트 시 fetch로 딱 한 번만 호출(`ViewTracker` 컴포넌트) — Route Handler는 그 자동 재렌더링을 안 일으켜서 근본 해결. 24시간 쿠키 dedup도 같이 적용돼 같은 방문자 중복 카운트도 안 됨. 관련 e2e(`like-bookmark-viewcount.spec.ts`)가 "재방문마다 조회수가 계속 오른다"는 예전 버그 기준 기댓값(`>=2`)을 갖고 있었던 것도 새 dedup 동작에 맞게 수정.
+- 로그아웃 버튼 배경색을 다른 텍스트형 버튼(마이페이지/로그인)과 안 맞던 것 발견, `ghost`(투명)로 통일(AppNav·LandingHeader 둘 다).
+- 위 전부 dev→main 배포 완료 (마지막 조회수 버그 수정 건만 아직 커밋만 하고 배포 전).
+
+**막혔다·알아낸 것**
+- e2e 4워커 병렬 실행 시 `global.setup.ts`부터 연쇄로 실패하는 걸 봤는데, 워커 1개로 순차 실행하면 22개 전부 통과 — Supabase 무료 티어가 동시 요청 부하를 못 버티는 것으로 보임(오늘 수동 테스트 계정도 많이 만들어서 더했을 수 있음). 코드 문제 아님, 그냥 로컬 e2e 실행 시 병렬 워커 수를 낮게 유지할 것.
+- Next.js Server Action은 revalidatePath/Tag를 안 불러도 호출될 때마다 현재 라우트를 자동으로 다시 렌더링한다는 걸 실측으로 확인 — 앞으로 상세 페이지에 "부수효과성 카운터"(조회수 등)를 넣을 땐 처음부터 Server Action 대신 Route Handler를 쓸 것.
+
+**다음에 할 것**
+- N+1 쿼리 점검, Realtime publication 부하 확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 로컬 dev가 프로덕션 DB 공유하는 구조 분리 검토 — 계속 이월.
+- 모바일 전용 랜딩페이지 아이디어만 나옴, 착수 안 함.
+- 모바일 프롬프트(`mobile-recruit-cursor-pagination-prompt.md` 등) 전달 여부 재확인 필요.
+
+---
+
 ## 2026-08-27 (목)
 
 **한 일**

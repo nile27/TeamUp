@@ -248,21 +248,11 @@ export async function updateApplicationStatus(formData: FormData): Promise<void>
   // Server Action 완료 후 Next가 알아서 현재 라우트를 새로고침한다.
 }
 
-// 상세 페이지 진입 시 호출 — ISR 캐시(getRecruitById)와 분리된 별도 mutation이라
-// 매 조회마다 캐시를 무효화하지 않고도 조회수를 늘릴 수 있음. 최신 값을 바로 반환해서
-// 페이지에서 캐시된 값 대신 이걸로 표시.
-export async function incrementRecruitViewCount(recruitId: string): Promise<number> {
-  try {
-    const recruit = await prisma.recruit.update({
-      where: { id: recruitId },
-      data: { viewCount: { increment: 1 } },
-      select: { viewCount: true },
-    });
-    return recruit.viewCount;
-  } catch {
-    return 0;
-  }
-}
+// 조회수 증가는 /api/recruit/[id]/view Route Handler로 옮김 — Server Action으로 만들면
+// 클라이언트에서 호출할 때마다 Next.js가 현재 라우트를 자동으로 다시 렌더링해서, 페이지의
+// 다른 Server Action(저장 토글 등)을 호출해도 조회수가 같이 올라가는 버그가 있었고, 반대로
+// 그 자동 새로고침 자체가 다른 상태 갱신과 레이스를 일으키기도 했음. Route Handler + fetch는
+// 이 자동 새로고침을 안 일으킴.
 
 // 저장(북마크) 토글. 폼이 아니라 버튼 클릭으로 바로 호출하는 형태라
 // useActionState 대신 결과를 직접 반환.

@@ -35,7 +35,7 @@ export async function AppNav() {
                   마이페이지
                 </Link>
                 <form action={logout}>
-                  <button type="submit" className={buttonVariants({ variant: "outline" })}>
+                  <button type="submit" className={buttonVariants({ variant: "ghost" })}>
                     로그아웃
                   </button>
                 </form>

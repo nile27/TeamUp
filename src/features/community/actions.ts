@@ -178,20 +178,11 @@ export async function promoteToRecruit(formData: FormData): Promise<void> {
   redirect(`/recruit/${recruitId}`);
 }
 
-// 상세 페이지 진입 시 호출. 커뮤니티 상세는 ISR이 아니라 매 요청 SSR이라
-// 캐시 걱정 없이 바로 늘리고 최신 값을 반환.
-export async function incrementPostViewCount(postId: string): Promise<number> {
-  try {
-    const post = await prisma.communityPost.update({
-      where: { id: postId },
-      data: { viewCount: { increment: 1 } },
-      select: { viewCount: true },
-    });
-    return post.viewCount;
-  } catch {
-    return 0;
-  }
-}
+// 조회수 증가는 /api/community/[id]/view Route Handler로 옮김(features/community/actions.ts
+// 참고). Server Action으로 만들면 클라이언트에서 호출할 때마다 Next.js가 현재 라우트를
+// 자동으로 다시 렌더링해서, 페이지에 있는 다른 Server Action(좋아요 토글 등)을 호출해도
+// 조회수가 같이 올라가거나(버그 발견), 반대로 그 자동 새로고침 자체가 다른 상태 갱신과
+// 레이스를 일으키는 문제가 있었음. Route Handler + fetch는 이 자동 새로고침을 안 일으킴.
 
 // 좋아요 토글. 버튼 클릭으로 바로 호출하는 형태.
 export async function toggleCommunityPostLike(
