@@ -22,11 +22,9 @@ export function ProblemSection() {
             </h3>
           </div>
           
-          <div className="flex flex-col gap-4">
-            <div className="bg-white border border-brand-line rounded-xl p-6 flex gap-4 items-start">
-              <div className="shrink-0 w-10 h-10 rounded-md bg-brand-amber-soft flex items-center justify-center text-[20px]">
-                🤔
-              </div>
+          <div className="flex flex-col divide-y divide-brand-ink/10">
+            <div className="flex gap-5 items-start py-5 first:pt-0">
+              <div className="shrink-0 text-[28px] leading-none pt-0.5">🤔</div>
               <div>
                 <h3 className="text-[17px] font-bold mb-1.5">아이디어는 많은데 개발을 못해요</h3>
                 <p className="text-[14px] text-brand-ink-soft">
@@ -34,11 +32,9 @@ export function ProblemSection() {
                 </p>
               </div>
             </div>
-            
-            <div className="bg-white border border-brand-line rounded-xl p-6 flex gap-4 items-start">
-              <div className="shrink-0 w-10 h-10 rounded-md bg-brand-amber-soft flex items-center justify-center text-[20px]">
-                🔍
-              </div>
+
+            <div className="flex gap-5 items-start py-5">
+              <div className="shrink-0 text-[28px] leading-none pt-0.5">🔍</div>
               <div>
                 <h3 className="text-[17px] font-bold mb-1.5">개발자 모임에 가면 소외감을 느껴요</h3>
                 <p className="text-[14px] text-brand-ink-soft">
@@ -46,11 +42,9 @@ export function ProblemSection() {
                 </p>
               </div>
             </div>
-            
-            <div className="bg-white border border-brand-line rounded-xl p-6 flex gap-4 items-start">
-              <div className="shrink-0 w-10 h-10 rounded-md bg-brand-amber-soft flex items-center justify-center text-[20px]">
-                🚀
-              </div>
+
+            <div className="flex gap-5 items-start py-5 last:pb-0">
+              <div className="shrink-0 text-[28px] leading-none pt-0.5">🚀</div>
               <div>
                 <h3 className="text-[17px] font-bold mb-1.5">실전 포트폴리오가 필요해요</h3>
                 <p className="text-[14px] text-brand-ink-soft">

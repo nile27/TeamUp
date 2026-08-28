@@ -44,7 +44,7 @@ export function FlowSection() {
           </h3>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10 mt-2">
           {steps.map((step, idx) => (
             <motion.div
               key={step.num}
@@ -52,9 +52,14 @@ export function FlowSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut", delay: idx * 0.1 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="bg-white border border-brand-line rounded-xl px-5 py-6 text-center"
+              className="relative px-2 text-center"
             >
-              <div className="w-8 h-8 rounded-full bg-brand-amber text-brand-ink font-extrabold flex items-center justify-center mx-auto mb-3.5 text-[15px]">
+              {/* 카드 대신 연결된 타임라인 — 숫자 원 사이를 선으로 이어서 "단계"라는
+                  흐름을 시각적으로 보여줌. FlowSection만의 정체성을 줌. */}
+              {idx < steps.length - 1 && (
+                <div className="hidden md:block absolute top-5 left-[calc(50%+24px)] right-[calc(-50%+24px)] h-px bg-brand-line" />
+              )}
+              <div className="relative z-10 w-10 h-10 rounded-full bg-brand-amber text-brand-ink font-extrabold flex items-center justify-center mx-auto mb-4 text-[16px] ring-4 ring-white">
                 {step.num}
               </div>
               <h3 className="text-[16px] font-bold mb-1.5">{step.title}</h3>
