@@ -1,16 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/layout/app-shell";
 import { Separator } from "@/components/ui/separator";
 import { getCommunityPostById, getLikeForUser } from "@/features/community/queries";
-import { incrementPostViewCount } from "@/features/community/actions";
 import { PromoteBanner } from "@/features/community/components/promote-banner";
 import { CommentList } from "@/features/community/components/comment-list";
 import { LikeButton } from "@/features/community/components/like-button";
 import { DeletePostButton } from "@/features/community/components/delete-post-button";
+import { ViewTracker } from "@/components/common/view-tracker";
 import { createClient } from "@/server/supabase";
 import { COMMUNITY_TAG_LABEL } from "@/config/labels";
 
@@ -33,10 +32,7 @@ export default async function CommunityDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   const isAuthor = user?.id === post.authorId;
 
-  const [like, viewCount] = await Promise.all([
-    user ? getLikeForUser(post.id, user.id) : Promise.resolve(null),
-    incrementPostViewCount(post.id),
-  ]);
+  const like = user ? await getLikeForUser(post.id, user.id) : null;
 
   return (
     <AppShell>
@@ -66,10 +62,11 @@ export default async function CommunityDetailPage({
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{post.title}</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1.5">
             {post.author.nickname} · {new Date(post.createdAt).toLocaleDateString("ko-KR")}
-            <span data-testid="post-view-count" className="inline-flex items-center gap-1 ml-1">
-              <Eye className="h-3.5 w-3.5" />
-              {viewCount}
-            </span>
+            <ViewTracker
+              initialCount={post.viewCount}
+              endpoint={`/api/community/${post.id}/view`}
+              testId="post-view-count"
+            />
           </p>
         </div>
 

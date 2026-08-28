@@ -38,7 +38,7 @@ export async function LandingHeader() {
               <form action={logout}>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 text-[14px] font-semibold rounded-lg px-[18px] py-[9px] bg-brand-amber text-brand-ink hover:bg-brand-amber-deep transition-colors"
+                  className="text-brand-ink-soft font-semibold hover:text-brand-ink transition-colors"
                 >
                   로그아웃
                 </button>

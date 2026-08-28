@@ -35,10 +35,16 @@ test("모집 저장(북마크)·조회수, 커뮤니티 좋아요·조회수가 
   await page.reload();
   await expect(page.getByRole("button", { name: /저장/ })).toHaveText("저장됨 (1)", { timeout: 10_000 });
 
-  // 조회수: 지금까지 여러 번 방문(작성 직후 진입 + 새로고침 + 재방문) — 최소 2 이상이어야 함
+  // 조회수: 방문 시 1 이상으로 올라가고, 새로고침/재방문해도 0으로 리셋되지 않아야 함.
+  // (조회수 쿠키 dedup 도입 이후엔 같은 세션 내 재방문은 중복으로 안 세는 게 의도된
+  // 동작이라 정확히 1로 유지되는 게 정상 — 예전엔 방문마다 계속 올라가는 걸 기대했지만
+  // 그게 바로 "좋아요만 눌러도 조회수가 같이 오르던" 버그와 같은 원인이었음.)
   await page.goto(recruitUrl);
-  const viewCountText = await page.getByTestId("recruit-view-count").innerText();
-  expect(Number(viewCountText.trim())).toBeGreaterThanOrEqual(2);
+  // ViewTracker는 마운트 후 클라이언트에서 비동기로 조회수를 반영하므로, 즉시
+  // innerText()로 스냅샷 찍으면 아직 안 바뀐 값을 읽는 레이스가 생길 수 있음 — 폴링.
+  await expect
+    .poll(async () => Number((await page.getByTestId("recruit-view-count").innerText()).trim()), { timeout: 10_000 })
+    .toBeGreaterThanOrEqual(1);
 
   // 커뮤니티 글 하나 만들기
   await page.goto("/community/new");
