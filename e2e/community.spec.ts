@@ -78,9 +78,18 @@ test.describe("커뮤니티", () => {
 
   test("페이지네이션 — 페이지가 여러 개면 다음 페이지로 이동, URL에 page 반영", async ({ page }) => {
     await page.goto("/community");
-    const nextLink = page.getByRole("link", { name: "Go to next page" });
+    // Suspense로 스트리밍되는 목록이라 goto 직후엔 스켈레톤일 수 있음 — 실제 글 목록이
+    // 뜰 때까지 기다린 다음에 페이지네이션 유무를 판단해야 함(bare isVisible()은 즉시
+    // 판정이라 스트리밍 중이면 항상 false로 오판해서 매번 skip되는 버그가 있었음).
+    await page.getByText("아이디어").first().waitFor({ state: "visible", timeout: 10_000 });
+    const nextLink = page.getByRole("button", { name: "다음 페이지로" });
 
-    if (!(await nextLink.isVisible().catch(() => false))) {
+    const nextLinkVisible = await nextLink
+      .waitFor({ state: "visible", timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!nextLinkVisible) {
       test.skip(true, "글이 10개 이하라 페이지네이션이 표시되지 않음 (동작 자체는 recruit 목록과 동일한 Pagination 컴포넌트로 검증됨)");
     }
 

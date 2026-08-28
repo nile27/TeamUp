@@ -1,7 +1,13 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/server/db";
 
-export async function getRecruitList(techStackFilter?: string[]) {
+const PAGE_SIZE = 9;
+const CURSOR_PAGE_SIZE = 20;
+
+// GET /api/recruit(모바일 무한 스크롤)용 — 페이지 번호가 아니라 "마지막으로 받은 항목의
+// id 다음부터 N개" 방식. 스크롤 중 새 글이 올라와도 offset 방식과 달리 항목이 밀려서
+// 중복/누락되는 문제가 없음. cursor 없으면 최신부터 시작.
+export async function getCursorRecruitList(techStackFilter: string[] | undefined, cursor?: string) {
   const whereClause = techStackFilter && techStackFilter.length > 0
     ? { techStack: { hasSome: techStackFilter } }
     : {};
@@ -9,6 +15,8 @@ export async function getRecruitList(techStackFilter?: string[]) {
   const recruits = await prisma.recruit.findMany({
     where: whereClause,
     orderBy: { createdAt: "desc" },
+    take: CURSOR_PAGE_SIZE + 1, // +1개를 더 가져와서 다음 페이지 존재 여부 판단(별도 count 쿼리 없이)
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
       roles: true,
       _count: {
@@ -17,7 +25,35 @@ export async function getRecruitList(techStackFilter?: string[]) {
     }
   });
 
-  return recruits;
+  const hasMore = recruits.length > CURSOR_PAGE_SIZE;
+  const page = hasMore ? recruits.slice(0, CURSOR_PAGE_SIZE) : recruits;
+  const nextCursor = hasMore ? page[page.length - 1].id : null;
+
+  return { recruits: page, nextCursor };
+}
+
+export async function getPaginatedRecruitList(techStackFilter: string[] | undefined, page: number) {
+  const whereClause = techStackFilter && techStackFilter.length > 0
+    ? { techStack: { hasSome: techStackFilter } }
+    : {};
+
+  const [recruits, total] = await Promise.all([
+    prisma.recruit.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      include: {
+        roles: true,
+        _count: {
+          select: { applications: true, bookmarks: true }
+        }
+      }
+    }),
+    prisma.recruit.count({ where: whereClause }),
+  ]);
+
+  return { recruits, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
 
 // ISR: /recruit/[id] — revalidateTag(`recruit-${id}`)로 지원/수정 시 갱신

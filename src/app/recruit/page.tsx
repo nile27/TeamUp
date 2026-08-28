@@ -3,15 +3,23 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { RecruitCard } from "@/features/recruit/components/recruit-card";
-import { getRecruitList } from "@/features/recruit/queries";
+import { getPaginatedRecruitList } from "@/features/recruit/queries";
 import { TechStackUrlFilter } from "@/features/recruit/components/tech-stack-url-filter";
 import { RECRUIT_TYPE_LABEL } from "@/config/labels";
 
 // Data fetching component
-async function RecruitList({ stackParam }: { stackParam?: string }) {
+async function RecruitList({ stackParam, page }: { stackParam?: string; page: number }) {
   const techStackFilter = stackParam ? stackParam.split(",") : [];
-  const recruits = await getRecruitList(techStackFilter);
+  const { recruits, totalPages } = await getPaginatedRecruitList(techStackFilter, page);
 
   if (recruits.length === 0) {
     return (
@@ -27,23 +35,51 @@ async function RecruitList({ stackParam }: { stackParam?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {recruits.map((recruit) => {
-        const mappedData = {
-          id: recruit.id,
-          title: recruit.title,
-          summary: recruit.content,
-          type: RECRUIT_TYPE_LABEL[recruit.type],
-          techStack: recruit.techStack,
-          completeness: recruit.completeness,
-          roles: recruit.roles.map(r => ({ name: r.name, current: 0, total: r.count })),
-          viewCount: recruit.viewCount,
-          bookmarkCount: recruit._count.bookmarks,
-          isClosed: recruit.status !== "OPEN",
-        };
-        return <RecruitCard key={recruit.id} data={mappedData} />;
-      })}
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {recruits.map((recruit) => {
+          const mappedData = {
+            id: recruit.id,
+            title: recruit.title,
+            summary: recruit.content,
+            type: RECRUIT_TYPE_LABEL[recruit.type],
+            techStack: recruit.techStack,
+            completeness: recruit.completeness,
+            roles: recruit.roles.map(r => ({ name: r.name, current: 0, total: r.count })),
+            viewCount: recruit.viewCount,
+            bookmarkCount: recruit._count.bookmarks,
+            isClosed: recruit.status !== "OPEN",
+          };
+          return <RecruitCard key={recruit.id} data={mappedData} />;
+        })}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="mt-10">
+          <Pagination>
+            <PaginationContent>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious href={`?page=${page - 1}${stackParam ? `&stack=${stackParam}` : ""}`} />
+                </PaginationItem>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink href={`?page=${p}${stackParam ? `&stack=${stackParam}` : ""}`} isActive={p === page}>
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {page < totalPages && (
+                <PaginationItem>
+                  <PaginationNext href={`?page=${page + 1}${stackParam ? `&stack=${stackParam}` : ""}`} />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -77,12 +113,13 @@ export default async function RecruitPage({
 }) {
   const params = await searchParams;
   const stackParam = typeof params.stack === "string" ? params.stack : undefined;
+  const page = typeof params.page === "string" ? Math.max(1, Number(params.page) || 1) : 1;
 
   return (
     <AppShell>
       <div className="container mx-auto px-4 py-12 max-w-6xl">
-        <PageHeader 
-          title="팀 찾기" 
+        <PageHeader
+          title="팀 찾기"
           description="다양한 아이디어가 당신의 합류를 기다리고 있습니다."
           action={
             <Button render={<Link href="/recruit/new" />} nativeButton={false}>
@@ -90,11 +127,11 @@ export default async function RecruitPage({
             </Button>
           }
         />
-        
+
         <TechStackUrlFilter />
 
-        <Suspense fallback={<RecruitListSkeleton />} key={stackParam}>
-          <RecruitList stackParam={stackParam} />
+        <Suspense fallback={<RecruitListSkeleton />} key={`${stackParam}-${page}`}>
+          <RecruitList stackParam={stackParam} page={page} />
         </Suspense>
       </div>
     </AppShell>
