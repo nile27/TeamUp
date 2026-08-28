@@ -18,16 +18,17 @@
 - **모집 API를 offset 배열 응답에서 cursor 기반 무한 스크롤로 변경 (breaking change).** `GET /api/recruit`가 모바일 쪽 페이지네이션이 아예 없다는 걸 확인하고, `{data: [...]}` → `{data: {recruits, nextCursor}}`로 전환. offset이 아니라 cursor를 쓴 이유: 무한 스크롤 중 새 글이 올라오면 offset 방식은 항목이 밀려서 중복/누락되는데 cursor는 그 문제가 없음. Prisma 네이티브 cursor(`cursor`+`skip:1`) + "N+1개 가져와서 넘치면 다음 페이지 있다고 판단"하는 방식이라 별도 count 쿼리 불필요. 페이지 크기는 처음 20으로 했다가 웹 목록(9~10)과 톤 맞춰 10으로 조정. 모바일 프롬프트 작성(`docs/local전용/mobile-recruit-cursor-pagination-prompt.md`, DB 구현 방식까지 상세 설명 포함).
 - **버그 발견·수정: 좋아요 누르면 조회수도 같이 올라감.** 원인: 조회수 증가가 상세 페이지 Server Component 렌더링 중에 직접 호출되는 구조였는데, **Next.js는 같은 페이지에서 어떤 Server Action이든 호출되면(좋아요 토글 등) 현재 라우트를 자동으로 다시 렌더링**해서 조회수 증가 함수도 같이 재실행됐던 것. 처음엔 쿠키로 dedup 시도했다가 "Server Component 렌더링 중 직접 호출"이라 `cookies().set()`이 조용히 실패하는 걸 발견(DB는 증가하는데 화면엔 0 반환 — catch가 에러를 삼킴). 최종 해결: 조회수 증가를 Server Action에서 **Route Handler**(`POST /api/community/[id]/view`, `POST /api/recruit/[id]/view`)로 옮기고 클라이언트가 마운트 시 fetch로 딱 한 번만 호출(`ViewTracker` 컴포넌트) — Route Handler는 그 자동 재렌더링을 안 일으켜서 근본 해결. 24시간 쿠키 dedup도 같이 적용돼 같은 방문자 중복 카운트도 안 됨. 관련 e2e(`like-bookmark-viewcount.spec.ts`)가 "재방문마다 조회수가 계속 오른다"는 예전 버그 기준 기댓값(`>=2`)을 갖고 있었던 것도 새 dedup 동작에 맞게 수정.
 - 로그아웃 버튼 배경색을 다른 텍스트형 버튼(마이페이지/로그인)과 안 맞던 것 발견, `ghost`(투명)로 통일(AppNav·LandingHeader 둘 다).
-- 위 전부 dev→main 배포 완료 (마지막 조회수 버그 수정 건만 아직 커밋만 하고 배포 전).
+- **이월 항목 일괄 정리.** N+1 쿼리 점검(코드 감사 결과 이상 없음, 종료) / Realtime publication 부하(현재 문제 없어 후순위로 명시 종료) / 좋아요 연타 방지(모바일에 이미 전송 중 로딩 상태로 막아놔서 애초에 문제 아니었음, 종료) / 모바일 전용 랜딩·모바일 프롬프트 전달은 사용자가 직접 처리 완료.
+- **로컬 dev가 프로덕션 DB를 공유하던 구조 분리 — Supabase CLI 로컬(Docker) 스택 구축.** `supabase init` + `supabase start`로 Postgres/Auth/Realtime/Storage 등을 완전히 로컬 Docker 컨테이너로 분리. 8GB 맥이라 Docker Desktop 메모리 3.8GB 기본값에서 analytics(Logflare)/vector 컨테이너가 기동 실패(헬스체크 타임아웃, 로그도 안 남을 정도로 뻗음) — 8GB 맥에서 메모리를 더 늘리면 OS 자체가 버벅일 위험이 커서, 대신 `supabase/config.toml`의 `[analytics] enabled = false`로 해당 컨테이너 자체를 꺼서 해결(로컬 개발엔 필수 기능 아님). 로컬 DB에 기존 마이그레이션 4개 전부 적용 + `prisma/seed.ts` 실행(User 6/Post 12/Recruit 15 등, 로그인 안 되는 화면용 더미). 접속 정보는 `.env.local`(gitignore 대상, 안 올라가는 것 재확인함)에 저장해 `.env`(프로덕션 값)는 안 건드림. `supabase/` 설정(`config.toml` 등, 시크릿 없음)은 커밋함.
+- 위 전부 + 조회수 버그 수정 건까지 PR #30으로 dev→main 배포 완료.
 
 **막혔다·알아낸 것**
 - e2e 4워커 병렬 실행 시 `global.setup.ts`부터 연쇄로 실패하는 걸 봤는데, 워커 1개로 순차 실행하면 22개 전부 통과 — Supabase 무료 티어가 동시 요청 부하를 못 버티는 것으로 보임(오늘 수동 테스트 계정도 많이 만들어서 더했을 수 있음). 코드 문제 아님, 그냥 로컬 e2e 실행 시 병렬 워커 수를 낮게 유지할 것.
 - Next.js Server Action은 revalidatePath/Tag를 안 불러도 호출될 때마다 현재 라우트를 자동으로 다시 렌더링한다는 걸 실측으로 확인 — 앞으로 상세 페이지에 "부수효과성 카운터"(조회수 등)를 넣을 땐 처음부터 Server Action 대신 Route Handler를 쓸 것.
+- 로컬 Supabase Docker 스택은 8GB급 맥처럼 메모리가 빠듯한 환경에서 analytics 컨테이너가 기본값으로는 잘 안 뜬다 — 다음에 새 환경에서 셋업할 때 참고.
 
 **다음에 할 것**
-- N+1 쿼리 점검, Realtime publication 부하 확인, 좋아요 연타 방지 수정이 모바일 버그와 같은 원인인지 확인, 로컬 dev가 프로덕션 DB 공유하는 구조 분리 검토 — 계속 이월.
-- 모바일 전용 랜딩페이지 아이디어만 나옴, 착수 안 함.
-- 모바일 프롬프트(`mobile-recruit-cursor-pagination-prompt.md` 등) 전달 여부 재확인 필요.
+- 없음 — MVP 성공 기준 5개 충족, 이월 백로그 전부 정리, 로컬/프로덕션 DB 분리까지 끝나서 **개발 기간을 오늘로 일단락**하기로 함. 재개 시 우선순위는 실사용 피드백 보고 다시 잡을 것 (리팩토링은 그 이후 후보).
 
 ---
 
