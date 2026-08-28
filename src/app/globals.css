@@ -69,9 +69,11 @@ body {
    앰버는 버튼/활성탭/게이지/아이콘 배경으로만, 흰 배경 위 텍스트색으로 쓰지 않는다. */
 :root {
   /* 이 앱은 다크모드를 지원하지 않는 라이트 전용 디자인(DESIGN.md) — 이 선언이 없으면
-     Android Chrome 등이 OS 다크모드일 때 자동으로 색을 반전/보정해버려서(force-dark),
-     일러스트·브랜드 컬러가 깨져 보임. 브라우저의 자동 다크모드 적용을 명시적으로 거부. */
-  color-scheme: light;
+     Android Chrome/삼성 인터넷 등이 OS 다크모드일 때 자동으로 색을 반전/보정해버려서
+     (force-dark), 일러스트·브랜드 컬러가 깨져 보임. "only"를 붙여야 SVG 일러스트의
+     짙은 아웃라인 색까지 반전 대상에서 제외됨 — "light"만 쓰면 일부 브라우저(삼성
+     인터넷 등)의 공격적인 다크모드 엔진이 이미지는 여전히 반전시킴. */
+  color-scheme: only light;
   --background: #ffffff;          /* Canvas */
   --foreground: #2b2620;          /* Ink */
   --card: #ffffff;
