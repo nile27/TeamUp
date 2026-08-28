@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/server/db";
 
 const PAGE_SIZE = 9;
-const CURSOR_PAGE_SIZE = 20;
+const CURSOR_PAGE_SIZE = 10;
 
 // GET /api/recruit(모바일 무한 스크롤)용 — 페이지 번호가 아니라 "마지막으로 받은 항목의
 // id 다음부터 N개" 방식. 스크롤 중 새 글이 올라와도 offset 방식과 달리 항목이 밀려서
