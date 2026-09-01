@@ -26,6 +26,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const recruit = await prisma.recruit.findUnique({
+    where: { id: recruitId },
+    select: { authorId: true },
+  });
+  if (!recruit) {
+    return NextResponse.json({ error: "모집을 찾을 수 없습니다." }, { status: 404 });
+  }
+  if (recruit.authorId === user.id) {
+    return NextResponse.json({ error: "본인이 등록한 모집글에는 지원할 수 없습니다." }, { status: 400 });
+  }
+
   let application;
   try {
     application = await prisma.application.create({

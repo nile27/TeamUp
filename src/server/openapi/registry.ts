@@ -77,6 +77,32 @@ const applicationSchema = registry.register(
   })
 );
 
+const applicantSchema = registry.register(
+  "Applicant",
+  z.object({
+    id: z.string(),
+    nickname: z.string(),
+    avatarUrl: z.string().nullable(),
+    bio: z.string().nullable(),
+    email: z.string(),
+    portfolio: z.string().nullable(),
+  })
+);
+
+const applicationWithApplicantSchema = registry.register(
+  "ApplicationWithApplicant",
+  applicationSchema.omit({ applicantId: true }).extend({
+    applicant: applicantSchema,
+  })
+);
+
+const recruitApplicantsSchema = registry.register(
+  "RecruitApplicants",
+  recruitSchema.extend({
+    applications: z.array(applicationWithApplicantSchema),
+  })
+);
+
 const profileSchema = registry.register(
   "Profile",
   z.object({
@@ -241,8 +267,59 @@ registry.registerPath({
       description: "지원 완료",
       content: { "application/json": { schema: envelope(applicationSchema) } },
     },
-    400: { description: "검증 실패 또는 중복 지원", content: { "application/json": { schema: errorSchema } } },
+    400: { description: "검증 실패, 본인 글 지원, 또는 중복 지원", content: { "application/json": { schema: errorSchema } } },
     401: unauthorized,
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/recruit/{id}/applicants",
+  summary: "지원자 목록 (모집 작성자 본인만)",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "지원자 목록",
+      content: { "application/json": { schema: envelope(recruitApplicantsSchema) } },
+    },
+    401: unauthorized,
+    403: forbidden,
+    404: notFound,
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/applications/{id}/status",
+  summary: "지원 수락/거절 (모집 작성자 본인만)",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: z.object({ status: z.enum(["ACCEPTED", "REJECTED"]) }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "처리 완료",
+      content: {
+        "application/json": {
+          schema: envelope(z.object({ id: z.string(), status: z.enum(["ACCEPTED", "REJECTED"]) })),
+        },
+      },
+    },
+    400: badRequest,
+    401: unauthorized,
+    403: forbidden,
+    404: notFound,
   },
 });
 
