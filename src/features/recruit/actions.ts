@@ -192,6 +192,17 @@ export async function applyToRecruit(
     return { error: "입력값을 다시 확인해주세요." };
   }
 
+  const recruit = await prisma.recruit.findUnique({
+    where: { id: recruitId },
+    select: { authorId: true },
+  });
+  if (!recruit) {
+    return { error: "모집을 찾을 수 없습니다." };
+  }
+  if (recruit.authorId === user.id) {
+    return { error: "본인이 등록한 모집글에는 지원할 수 없습니다." };
+  }
+
   try {
     await prisma.application.create({
       data: {
