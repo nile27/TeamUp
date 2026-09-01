@@ -93,7 +93,7 @@ Authorization: Bearer <supabase access token>
 
 ## `POST /api/applications`
 
-지원. **인증 필요.**
+지원. **인증 필요.** 모집글 작성자 본인은 지원 불가(서버에서 `authorId` 비교 후 차단 — 2026-09-01 hotfix, 이전엔 REST로 직접 호출 시 우회 가능했던 버그).
 
 **요청 바디**
 ```json
@@ -102,8 +102,63 @@ Authorization: Bearer <supabase access token>
 
 **응답**
 - `201` `{ "data": <application> }`
-- `400` 검증 실패 또는 중복 지원(`@@unique` 위반)
+- `400` 검증 실패, 본인 글 지원, 또는 중복 지원(`@@unique` 위반)
 - `401` 미인증
+- `404` 모집을 찾을 수 없음
+
+---
+
+## `GET /api/recruit/[id]/applicants`
+
+지원자 목록. **모집 작성자 본인만**, 인증 필요.
+
+**응답**
+```json
+{
+  "data": {
+    "...recruit 필드": "GET /api/recruit/[id]와 동일",
+    "applications": [
+      {
+        "id": "...",
+        "recruitId": "...",
+        "message": "...",
+        "status": "PENDING",
+        "createdAt": "...",
+        "applicant": {
+          "id": "...",
+          "nickname": "...",
+          "avatarUrl": null,
+          "bio": "...",
+          "email": "...",
+          "portfolio": "..."
+        }
+      }
+    ]
+  }
+}
+```
+- `401` 미인증
+- `403` 작성자 아님
+- `404` 모집을 찾을 수 없음
+
+---
+
+## `PATCH /api/applications/[id]/status`
+
+지원 수락/거절. **모집 작성자 본인만**, 인증 필요.
+
+**요청 바디**
+```json
+{ "status": "ACCEPTED" }
+```
+(`"ACCEPTED"` | `"REJECTED"` 둘 중 하나만 허용)
+
+**응답**
+- `200` `{ "data": { "id": "...", "status": "ACCEPTED" } }`
+- `400` status 값이 잘못됨
+- `401` 미인증
+- `403` 작성자 아님
+- `404` 지원 내역을 찾을 수 없음
 
 ---
 
