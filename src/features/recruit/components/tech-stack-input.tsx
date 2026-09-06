@@ -20,23 +20,25 @@ export function TechStackInput({ value, onChange }: TechStackInputProps) {
   return (
     <div className="space-y-3">
       {TECH_STACK_CATEGORIES.map((category) => (
-        <div key={category.label} className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground w-20 shrink-0">
+        <div key={category.label} className="flex items-start gap-2">
+          <span className="text-xs font-medium text-muted-foreground w-20 shrink-0 pt-1.5">
             {category.label}
           </span>
-          {category.items.map((stack) => {
-            const selected = value.includes(stack);
-            return (
-              <Badge
-                key={stack}
-                onClick={() => toggle(stack)}
-                variant={selected ? "default" : "outline"}
-                className="cursor-pointer px-2.5 py-1 text-xs"
-              >
-                {stack}
-              </Badge>
-            );
-          })}
+          <div className="flex flex-wrap gap-2">
+            {category.items.map((stack) => {
+              const selected = value.includes(stack);
+              return (
+                <Badge
+                  key={stack}
+                  onClick={() => toggle(stack)}
+                  variant={selected ? "default" : "outline"}
+                  className="cursor-pointer px-2.5 py-1 text-xs"
+                >
+                  {stack}
+                </Badge>
+              );
+            })}
+          </div>
         </div>
       ))}
     </div>

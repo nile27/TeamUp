@@ -16,14 +16,18 @@ import { CommunityTagFilter } from "@/features/community/components/community-ta
 import { getCommunityPosts } from "@/features/community/queries";
 import { COMMUNITY_TAG_LABEL } from "@/config/labels";
 import type { CommunityTag } from "@prisma/client";
+import { FadeIn } from "@/components/pilot/fade-in";
+import { MessageSquare } from "lucide-react";
 
 async function CommunityPostList({ tag, page }: { tag?: CommunityTag; page: number }) {
   const { posts, totalPages } = await getCommunityPosts(tag, page);
 
   if (posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-dashed border-border rounded-xl">
-        <div className="text-4xl mb-4">💬</div>
+      <div className="flex flex-col items-center justify-center py-24 text-center bg-card border border-dashed border-border rounded-xl">
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary">
+          <MessageSquare className="size-6 text-secondary-foreground" />
+        </div>
         <h3 className="text-lg font-bold text-foreground mb-2">아직 글이 없어요</h3>
         <p className="text-muted-foreground mb-6 text-sm">첫 아이디어를 남겨보세요.</p>
         <Button render={<Link href="/community/new" />} nativeButton={false}>
@@ -34,58 +38,60 @@ async function CommunityPostList({ tag, page }: { tag?: CommunityTag; page: numb
   }
 
   return (
-    <div className="bg-white border rounded-xl overflow-hidden">
-      {posts.map((post) => (
-        <PostListItem
-          key={post.id}
-          post={{
-            id: post.id,
-            category: COMMUNITY_TAG_LABEL[post.tag],
-            title: post.title,
-            author: post.author.nickname,
-            createdAt: new Date(post.createdAt).toLocaleDateString("ko-KR"),
-            likeCount: post._count.likes,
-            commentCount: post._count.comments,
-          }}
-        />
-      ))}
+    <FadeIn>
+      <div className="bg-card border rounded-xl overflow-hidden">
+        {posts.map((post) => (
+          <PostListItem
+            key={post.id}
+            post={{
+              id: post.id,
+              category: COMMUNITY_TAG_LABEL[post.tag],
+              title: post.title,
+              author: post.author.nickname,
+              createdAt: new Date(post.createdAt).toLocaleDateString("ko-KR"),
+              likeCount: post._count.likes,
+              commentCount: post._count.comments,
+            }}
+          />
+        ))}
 
-      {totalPages > 1 && (
-        <div className="p-4 border-t">
-          <Pagination>
-            <PaginationContent>
-              {page > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious href={`?page=${page - 1}${tag ? `&tag=${tag}` : ""}`} />
-                </PaginationItem>
-              )}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <PaginationItem key={p}>
-                  <PaginationLink href={`?page=${p}${tag ? `&tag=${tag}` : ""}`} isActive={p === page}>
-                    {p}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {page < totalPages && (
-                <PaginationItem>
-                  <PaginationNext href={`?page=${page + 1}${tag ? `&tag=${tag}` : ""}`} />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-    </div>
+        {totalPages > 1 && (
+          <div className="p-4 border-t">
+            <Pagination>
+              <PaginationContent>
+                {page > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious href={`?page=${page - 1}${tag ? `&tag=${tag}` : ""}`} />
+                  </PaginationItem>
+                )}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <PaginationItem key={p}>
+                    <PaginationLink href={`?page=${p}${tag ? `&tag=${tag}` : ""}`} isActive={p === page}>
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                {page < totalPages && (
+                  <PaginationItem>
+                    <PaginationNext href={`?page=${page + 1}${tag ? `&tag=${tag}` : ""}`} />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </div>
+    </FadeIn>
   );
 }
 
 function CommunityListSkeleton() {
   return (
-    <div className="bg-white border rounded-xl overflow-hidden animate-pulse">
+    <div className="bg-card border rounded-xl overflow-hidden animate-pulse">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="p-4 border-b last:border-b-0 flex items-center justify-between">
-          <div className="w-1/2 h-5 bg-slate-200 rounded" />
-          <div className="w-24 h-4 bg-slate-200 rounded" />
+          <div className="w-1/2 h-5 bg-muted rounded" />
+          <div className="w-24 h-4 bg-muted rounded" />
         </div>
       ))}
     </div>

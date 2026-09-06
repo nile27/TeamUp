@@ -27,7 +27,7 @@ export function RecruitCard({ data }: { data: RecruitCardProps }) {
     <Link href={`/recruit/${data.id}`} className="block h-full group">
       <Card className="relative flex flex-col h-full p-0 gap-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/[0.06] transition-all duration-300 border-border/50 group-hover:-translate-y-1.5">
         {/* 카드 상단 컬러 스트립 — 타입별 시각적 앵커, 텍스트만 있는 카드 탈피 */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/70 to-secondary" />
+        <div data-slot="card-accent-strip" className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/70 to-secondary" />
 
         <div className="flex flex-col flex-1 p-6">
           <div className="flex justify-between items-start mb-4">

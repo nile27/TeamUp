@@ -15,6 +15,8 @@ import { RecruitCard } from "@/features/recruit/components/recruit-card";
 import { getPaginatedRecruitList } from "@/features/recruit/queries";
 import { TechStackUrlFilter } from "@/features/recruit/components/tech-stack-url-filter";
 import { RECRUIT_TYPE_LABEL } from "@/config/labels";
+import { FadeIn } from "@/components/pilot/fade-in";
+import { Inbox } from "lucide-react";
 
 // Data fetching component
 async function RecruitList({ stackParam, page }: { stackParam?: string; page: number }) {
@@ -24,7 +26,9 @@ async function RecruitList({ stackParam, page }: { stackParam?: string; page: nu
   if (recruits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center bg-card border border-dashed border-border rounded-xl">
-        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary text-2xl">📭</div>
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary">
+          <Inbox className="size-6 text-secondary-foreground" />
+        </div>
         <h3 className="text-lg font-bold text-foreground mb-2">아직 모집글이 없어요</h3>
         <p className="text-muted-foreground mb-6 text-sm">해당 기술 스택을 찾는 첫 번째 프로젝트의 리더가 되어보세요!</p>
         <Button render={<Link href="/recruit/new" />} nativeButton={false}>
@@ -37,7 +41,7 @@ async function RecruitList({ stackParam, page }: { stackParam?: string; page: nu
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {recruits.map((recruit) => {
+        {recruits.map((recruit, index) => {
           const mappedData = {
             id: recruit.id,
             title: recruit.title,
@@ -50,7 +54,11 @@ async function RecruitList({ stackParam, page }: { stackParam?: string; page: nu
             bookmarkCount: recruit._count.bookmarks,
             isClosed: recruit.status !== "OPEN",
           };
-          return <RecruitCard key={recruit.id} data={mappedData} />;
+          return (
+            <FadeIn key={recruit.id} index={index}>
+              <RecruitCard data={mappedData} />
+            </FadeIn>
+          );
         })}
       </div>
 
