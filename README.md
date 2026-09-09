@@ -1,5 +1,7 @@
 # 📦 프로젝트 문서 안내 (READ FIRST)
 
+📱 [모바일(React Native) 저장소 바로가기](https://github.com/nile27/TeamUp-Mobile)
+
 이 폴더의 파일들을 새로 만들 Next.js 프로젝트에 어떻게 넣는지 안내합니다.
 
 ---
